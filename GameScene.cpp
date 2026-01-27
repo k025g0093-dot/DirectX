@@ -45,11 +45,11 @@ void GameScene::Draw() {
 }
 
 
-GameScene::~GameScene() { 
-
-	//解放エクササイズ
-	delete sprite_;
-}
+//GameScene::~GameScene() { 
+//
+//	//解放エクササイズ
+//	delete sprite_;
+//}
   
 //===================================================
 //プライベート内の処理
