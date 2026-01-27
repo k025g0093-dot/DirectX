@@ -25,7 +25,11 @@ void GameScene::Initialize() {
 void GameScene::Updatta() {
 
 	//更新処理の追加
+	Vector2 position = sprite_->GetPosition();
+	position.x += 2.0f;
+	position.y += 1.0f;
 
+	sprite_->SetPosition(position);
 }
 
 void GameScene::Draw() {
@@ -41,10 +45,13 @@ void GameScene::Draw() {
 }
 
 
-//GameScene::~GameScene() { 
-//
-//}
-    //===================================================
+GameScene::~GameScene() { 
+
+	//解放エクササイズ
+	delete sprite_;
+}
+  
+//===================================================
 //プライベート内の処理
 //===================================================
 
