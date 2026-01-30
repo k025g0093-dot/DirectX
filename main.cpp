@@ -14,12 +14,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// 蒲田エンジンのロード
 	KamataEngine::Initialize(L"AE2?_99_ヤマト_ユウヤ_AL2");
+	//ImGUIを使うための準備
+	ImGuiManager* imguiManger = ImGuiManager::GetInstance();
 
 	// DirectXのロード
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 	// ゲームシーンの呼び出し
 	GameScene* gameScene = new GameScene();
-	gameScene->Initialize();
 
 	// ここから下のクラスのインスタンスなどの情報を追加
 
@@ -34,17 +35,24 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			break;
 		}
 
+		//Imguiの受付開始
+		imguiManger->Begin();
+
 		//---------------------------------------------------
 		// 更新処理ここから
 		//---------------------------------------------------
 
 		// この中に更新処理などを随時追加していく
-
 		gameScene->Updatta();
 
 		//---------------------------------------------------
 		// 更新処理ここまで
 		//---------------------------------------------------
+
+
+		//Guiの受付終了
+		imguiManger->End();
+
 
 		//---------------------------------------------------
 		// 描画処理ここから
@@ -54,6 +62,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		dxCommon->PreDraw(); // ここから開始して
 
 		gameScene->Draw();
+
+
+		//Guiの描画
+		imguiManger->Draw();
+
+
+		AxisIndicator::GetInstance()->Draw();
 
 		dxCommon->PostDraw(); // ここで終了
 
