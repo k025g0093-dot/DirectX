@@ -66,8 +66,7 @@ GameScene::~GameScene() {
 	delete model_;
 	delete player_;
 
-	// 解放エクササイズ
-	delete model_;
+
 }
 //===================================================
 // プライベート内の処理
