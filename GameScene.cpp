@@ -97,7 +97,7 @@ void GameScene::Draw() {
 	////写真用
 	// Sprite::PreDraw();
 	// sprite_->Draw();
-	// Sprite::PostDraw();
+	// Sprite::PostDraw();//
 
 	// 3Dモデル描画用
 	Model::PreDraw();
