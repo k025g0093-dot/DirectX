@@ -27,7 +27,9 @@ void Player::Updata() {
 
 
 void Player::Draw() {
+
 	model_->Draw(worldTransform_, *camera_, textureHandle_);
+
 }
 
 

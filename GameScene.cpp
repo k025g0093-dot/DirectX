@@ -16,6 +16,7 @@ void GameScene::Initialize() {
 	// 初期化処理の追加
 	//   トランスフォームとカメラの初期化
 	worldTransform_.Initialize();
+	camera_.farZ = 2000;
 	camera_.Initialize();
 	debugCamera_ = new DebugCamera(1280,720);
 	PrimitiveDrawer::GetInstance()->SetCamera(&camera_);
@@ -23,9 +24,11 @@ void GameScene::Initialize() {
 	// モデルの生成
 	model_ = Model::Create();
 	Mapmodel_ = Model::Create();
+	modelSkydome_ = Model::Create();
 	// 関数を使っての初期化などあとはnew関連も
 
 	// マップのブロックとかの初期化
+
 
 	// 要素数
 	const uint32_t kNumBlockVirtical = 10;
@@ -60,30 +63,34 @@ void GameScene::Initialize() {
 			worldTransformBlocks_[j][i]->translation_.x = kBlockWidth * (float)i;
 			// y座標には縦方向の変数 j を使う（ここを i にすると斜めになるので j に修正）
 			worldTransformBlocks_[j][i]->translation_.y = kBlockHeight * (float)j;
-			//worldTransformBlocks_[j][i]->translation_.z = 0.0f;
-			//// 行列の更新を忘れずに
-			//worldTransformBlocks_[j][i]->TransferMatrix();
+			worldTransformBlocks_[j][i]->translation_.z = 0.0f;
+			// 行列の更新を忘れずに
+			worldTransformBlocks_[j][i]->TransferMatrix();
 		}
 	}
 
 #pragma region 画像読み込み範囲
 
 	textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
+
 #pragma endregion
 
 	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
 
+
 	// playerや敵などのインスタンスの生成
 	player_ = new Player();
 	player_->Initialize(model_, textureHandle_, &camera_);
+
+	SkyDome_ = new SkyDome();
+	SkyDome_->Initialize(modelSkydome_);
 }
 
 
 //更新処理
 void GameScene::Updatta() {
 
-	// 更新処理の追加
-	player_->Updata();
 
 #ifdef _DEBUG
 
@@ -105,6 +112,10 @@ void GameScene::Updatta() {
 	}
 	
 	
+		// 更新処理の追加
+	player_->Updata();
+	SkyDome_->Update();
+
 	// ブロックの更新
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
@@ -124,12 +135,14 @@ void GameScene::Updatta() {
 
 //描画処理
 void GameScene::Draw() {
-
 	// 描画処理の追加
 	Model::PreDraw();
+
+	model_->Draw(worldTransform_, camera_, textureHandle_);
+
+	SkyDome_->Draw(&camera_);
 	player_->Draw();
 
-	// model_->Draw(worldTransform_, camera_, textureHandle_);
 
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
@@ -153,7 +166,7 @@ GameScene::~GameScene() {
 	delete Mapmodel_;
 	delete player_;
 	delete debugCamera_;
-
+	delete modelSkydome_;
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
 			delete worldTransformBlock;

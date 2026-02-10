@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include"Player.h"
+#include "SkyDome.h"
 #include<vector>
 
 class GameScene {
@@ -17,6 +18,8 @@ public:
 	//3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* Mapmodel_ = nullptr;
+	KamataEngine::Model* modelSkydome_ = nullptr;
+
 	std::vector<std::vector<KamataEngine::WorldTransform*> >worldTransformBlocks_;
 
 	// 初期化関数
@@ -29,7 +32,7 @@ public:
 	void Draw();
 
 	Player* player_ = nullptr;
-
+	SkyDome* SkyDome_ = nullptr;
 private:
 	uint32_t textureHandle_;
 	bool isDebugCamera_ = false;
