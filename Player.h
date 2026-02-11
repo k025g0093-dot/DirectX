@@ -9,7 +9,7 @@ public:
 	~Player();
 
 	// 初期化関数
-	void Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera);
+	void Initialize(KamataEngine::Model* model/*, uint32_t textureHandle*/, KamataEngine::Camera* camera);
 
 	// 更新処理
 	void Updata();

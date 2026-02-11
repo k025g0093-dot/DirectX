@@ -25,6 +25,7 @@ void GameScene::Initialize() {
 	model_ = Model::Create();
 	Mapmodel_ = Model::Create();
 	modelSkydome_ = Model::Create();
+	modelPlayer_ = Model::Create(); // これだと中身が空
 	// 関数を使っての初期化などあとはnew関連も
 
 	// マップのブロックとかの初期化
@@ -73,7 +74,7 @@ void GameScene::Initialize() {
 
 	textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
-	modelPlayer_ = Model::CreateFromOBJ("player", true);
+	modelPlayer_ = Model::CreateFromOBJ("Bunny", true);//ここにモデルを入れる際はモデルなどと同じ名前で
 #pragma endregion
 
 	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
@@ -81,7 +82,7 @@ void GameScene::Initialize() {
 
 	// playerや敵などのインスタンスの生成
 	player_ = new Player();
-	player_->Initialize(modelPlayer_, textureHandle_, &camera_);
+	player_->Initialize(modelPlayer_/*, textureHandle_*/, &camera_);
 
 	SkyDome_ = new SkyDome();
 	SkyDome_->Initialize(modelSkydome_);

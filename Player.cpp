@@ -5,11 +5,11 @@ using namespace KamataEngine;
 
 Player::Player() {}
 
-void Player::Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera) {
+void Player::Initialize(KamataEngine::Model* model/*, uint32_t textureHandle*/, KamataEngine::Camera* camera) {
 
 	assert(model);
 	model_ = model;
-	textureHandle_ = textureHandle;
+	//textureHandle_ = textureHandle;
 	worldTransform_.Initialize();
 	camera_ = camera;
 }
@@ -25,7 +25,7 @@ void Player::Updata() {
 }
 
 void Player::Draw() { 
-	model_->Draw(worldTransform_, *camera_, textureHandle_); 
+	model_->Draw(worldTransform_, *camera_/*, textureHandle_*/); 
 
 }
 
