@@ -73,7 +73,7 @@ void GameScene::Initialize() {
 
 	textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
-
+	modelPlayer_ = Model::CreateFromOBJ("player", true);
 #pragma endregion
 
 	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
@@ -81,7 +81,7 @@ void GameScene::Initialize() {
 
 	// playerや敵などのインスタンスの生成
 	player_ = new Player();
-	player_->Initialize(model_, textureHandle_, &camera_);
+	player_->Initialize(modelPlayer_, textureHandle_, &camera_);
 
 	SkyDome_ = new SkyDome();
 	SkyDome_->Initialize(modelSkydome_);
