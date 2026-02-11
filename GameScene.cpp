@@ -50,7 +50,7 @@ void GameScene::Initialize() {
 		for (uint32_t i = 0; i < kNumBlockHorizontal; i++) {
 
 			//
-			if (i >= 8 && i <= 10 && j <= 2) {
+			if (i >= 0 && i <= 10 && j <= 2) {
 				worldTransformBlocks_[j][i] = nullptr; // nullptrを入れておく
 				continue;                              // 次のループへ（newを飛ばす）
 			}
@@ -74,7 +74,7 @@ void GameScene::Initialize() {
 
 	textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
-	modelPlayer_ = Model::CreateFromOBJ("Bunny", true);//ここにモデルを入れる際はモデルなどと同じ名前で
+	modelPlayer_ = Model::CreateFromOBJ("Yeti", true);//ここにモデルを入れる際はモデルなどと同じ名前で
 #pragma endregion
 
 	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
