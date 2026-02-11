@@ -17,8 +17,9 @@ public:
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 	//3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
-	KamataEngine::Model* Mapmodel_ = nullptr;
-	KamataEngine::Model* modelSkydome_ = nullptr;
+	KamataEngine::Model* Mapmodel_ = nullptr;//マップのモデル
+	KamataEngine::Model* modelSkydome_ = nullptr;//スカイドームのモデル
+	KamataEngine::Model* modelPlayer_ = nullptr;//プレイヤーのモデル
 
 	std::vector<std::vector<KamataEngine::WorldTransform*> >worldTransformBlocks_;
 
