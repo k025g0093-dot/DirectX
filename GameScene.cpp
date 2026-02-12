@@ -49,7 +49,7 @@ void GameScene::Initialize() {
 	for (uint32_t j = 0; j < kNumBlockVirtical; j++) {
 		for (uint32_t i = 0; i < kNumBlockHorizontal; i++) {
 
-			//
+			//マップに穴を開けられるように
 			if (i >= 0 && i <= 10 && j <= 2) {
 				worldTransformBlocks_[j][i] = nullptr; // nullptrを入れておく
 				continue;                              // 次のループへ（newを飛ばす）
