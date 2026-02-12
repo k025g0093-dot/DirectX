@@ -49,7 +49,8 @@ void GameScene::Initialize() {
 	for (uint32_t j = 0; j < kNumBlockVirtical; j++) {
 		for (uint32_t i = 0; i < kNumBlockHorizontal; i++) {
 
-			//マップに穴を開けられるように
+			// マップに穴を開けられるように
+
 			if (i >= 0 && i <= 10 && j <= 2) {
 				worldTransformBlocks_[j][i] = nullptr; // nullptrを入れておく
 				continue;                              // 次のループへ（newを飛ばす）
@@ -73,7 +74,7 @@ void GameScene::Initialize() {
 #pragma region 画像読み込み範囲
 
 	textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
-	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);//スカイドームのモデルを読み込む
 	modelPlayer_ = Model::CreateFromOBJ("Yeti", true);//ここにモデルを入れる際はモデルなどと同じ名前で
 #pragma endregion
 
