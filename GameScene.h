@@ -1,8 +1,9 @@
 #pragma once
 #include "KamataEngine.h"
-#include"Player.h"
+#include "MapChipField.h"
+#include "Player.h"
 #include "SkyDome.h"
-#include<vector>
+#include <vector>
 
 class GameScene {
 
@@ -15,13 +16,13 @@ public:
 	// カメラ
 	KamataEngine::Camera camera_;
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
-	//3Dモデルで必要なモデルの呼び出し
+	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
-	KamataEngine::Model* Mapmodel_ = nullptr;//マップのモデル
-	KamataEngine::Model* modelSkydome_ = nullptr;//スカイドームのモデル
-	KamataEngine::Model* modelPlayer_ = nullptr;//プレイヤーのモデル
+	KamataEngine::Model* Mapmodel_ = nullptr;     // マップのモデル
+	KamataEngine::Model* modelSkydome_ = nullptr; // スカイドームのモデル
+	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
 
-	std::vector<std::vector<KamataEngine::WorldTransform*> >worldTransformBlocks_;
+	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
 
 	// 初期化関数
 	void Initialize();
@@ -32,9 +33,17 @@ public:
 	// 描画処理
 	void Draw();
 
+	void GenerateBlocks();
+
 	Player* player_ = nullptr;
 	SkyDome* SkyDome_ = nullptr;
-private:
+	MapChipField* mapChipField_;
+
+
+
+private :
+	
+	
 	uint32_t textureHandle_;
 	bool isDebugCamera_ = false;
 	// プライベートでシーンごとの旋回用の処理関数を追加
