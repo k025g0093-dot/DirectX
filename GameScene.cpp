@@ -37,27 +37,38 @@ void GameScene::Initialize() {
 	modelMap_ = Model::CreateFromOBJ("block", true); //マップのモデルの読み込み
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデルを読み込む
 	modelPlayer_ = Model::CreateFromOBJ("player", true);     // ここにモデルを入れる際はモデルなどと同じ名前で
+
+
 #pragma endregion
 
 	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
 
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);//x,Yの順で入れる
+
 	// playerや敵などのインスタンスの生成
 	player_ = new Player();
-	player_->Initialize(modelPlayer_, &camera_);
+	player_->Initialize(modelPlayer_, &camera_, playerPosition);
+
+
 	//プレイヤーの初期位置を変えれるようにgetterを追加
-	player_->GetWorldTransform().translation_ = {2.0f, 2.0f, 0.0f};//X,Y,Zの順だよ
+	//player_->GetWorldTransform().translation_ = {2.0f, 2.0f, 0.0f};//X,Y,Zの順だよ
+
+
 
 	//スカイドームの初期化とインスタンスの生成
 	SkyDome_ = new SkyDome();
 	SkyDome_->Initialize(modelSkydome_);
 
+
 	//マップチップの初期化とCSVファイルの読み込み
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
 
+
 	//ブロックの生成処理
 	GenerateBlocks();
 	
+
 	//ブロックのモデルをセッターに入れてそのまま使用できるように
 	assert(modelMap_);
 	model_ = modelMap_;
