@@ -43,7 +43,7 @@ void GameScene::Initialize() {
 
 	// playerや敵などのインスタンスの生成
 	player_ = new Player();
-	player_->Initialize(modelPlayer_ /*, textureHandle_*/, &camera_);
+	player_->Initialize(modelPlayer_, &camera_);
 	//プレイヤーの初期位置を変えれるようにgetterを追加
 	player_->GetWorldTransform().translation_ = {2.0f, 2.0f, 0.0f};//X,Y,Zの順だよ
 
