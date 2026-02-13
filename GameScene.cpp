@@ -1,5 +1,6 @@
-﻿#include "GameScene.h"
+#include "GameScene.h"
 #include <math\Matrix4x4.h> // 必要に応じてインクルード
+#include <cassert>
 //===================================================
 // パブリックの処理
 //===================================================
@@ -20,16 +21,22 @@ void GameScene::Initialize() {
 	debugCamera_ = new DebugCamera(1280, 720);
 	PrimitiveDrawer::GetInstance()->SetCamera(&camera_);
 
+
 	// モデルの生成
 	model_ = Model::Create();
 	Mapmodel_ = Model::Create();
 	modelSkydome_ = Model::Create();
-	modelPlayer_ = Model::Create(); // これだと中身が空
+	modelPlayer_ = Model::Create(); 
+
+
 #pragma region 画像読み込み範囲
 
-	textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
+	//textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
+
+	//各モデルの読み込み
+	modelMap_ = Model::CreateFromOBJ("block", true); //マップのモデルの読み込み
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデルを読み込む
-	modelPlayer_ = Model::CreateFromOBJ("Yeti", true);     // ここにモデルを入れる際はモデルなどと同じ名前で
+	modelPlayer_ = Model::CreateFromOBJ("player", true);     // ここにモデルを入れる際はモデルなどと同じ名前で
 #pragma endregion
 
 	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
@@ -37,16 +44,23 @@ void GameScene::Initialize() {
 	// playerや敵などのインスタンスの生成
 	player_ = new Player();
 	player_->Initialize(modelPlayer_ /*, textureHandle_*/, &camera_);
+	//プレイヤーの初期位置を変えれるようにgetterを追加
+	player_->GetWorldTransform().translation_ = {2.0f, 2.0f, 0.0f};//X,Y,Zの順だよ
 
+	//スカイドームの初期化とインスタンスの生成
 	SkyDome_ = new SkyDome();
 	SkyDome_->Initialize(modelSkydome_);
 
+	//マップチップの初期化とCSVファイルの読み込み
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
 
 	//ブロックの生成処理
 	GenerateBlocks();
-
+	
+	//ブロックのモデルをセッターに入れてそのまま使用できるように
+	assert(modelMap_);
+	model_ = modelMap_;
 }
 
 // 更新処理
@@ -97,7 +111,7 @@ void GameScene::Draw() {
 	// 描画処理の追加
 	Model::PreDraw();
 
-	model_->Draw(worldTransform_, camera_, textureHandle_);
+	//model_->Draw(worldTransform_, camera_, textureHandle_);
 
 	SkyDome_->Draw(&camera_);
 	player_->Draw();
@@ -109,7 +123,7 @@ void GameScene::Draw() {
 				continue;
 			}
 
-			Mapmodel_->Draw(*worldTransformBlock, camera_, textureHandle_);
+			model_->Draw(*worldTransformBlock, camera_);
 		}
 	}
 

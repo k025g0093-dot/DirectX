@@ -16,6 +16,9 @@ public:
 
 	void Draw();
 
+	//プレイヤーの位置を扱えるように
+	KamataEngine::WorldTransform& GetWorldTransform() { return worldTransform_; }
+
 private://プライベート関数群とかのその他
 
 	// ワールドトランスフォーム
