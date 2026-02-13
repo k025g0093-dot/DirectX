@@ -21,6 +21,7 @@ public:
 	KamataEngine::Model* Mapmodel_ = nullptr;     // マップのモデル
 	KamataEngine::Model* modelSkydome_ = nullptr; // スカイドームのモデル
 	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
+	KamataEngine::Model* modelMap_ = nullptr;  // プレイヤーのモデル
 
 	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
 
