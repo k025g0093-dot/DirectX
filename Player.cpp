@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Player.h"
 #include <algorithm>
 #include <cassert>
@@ -32,58 +33,117 @@ void Player::Initialize(
 void Player::Updata() {
 
 	// キーによる移動
-	if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
 
-		// 別の専用の加速をついか
-		Vector3 acceleration = {};
+	// 着地フラグ
+	bool landing = false;
+	if (velocity_.y < 0) {
 
-		// 移動処理
-		if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
-			// プレイヤーの画像の向きの変更
-			if (lrDirection_ != LRDirection::kLeft) {
-				lrDirection_ = LRDirection::kLeft;
-
-				// 旋回時のアニメーションのためのもの
-				turnFistRotationY_ = worldTransform_.rotation_.y;
-				turnTimer_ = 1.0f;
-			}
-
-			// 逆方向時のブレーキ処理
-			if (velocity_.x < 0.0f) {
-				velocity_.x *= (1.0f - kAttenuation);
-			}
-
-			acceleration.x += kAcceleration;
-		} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
-
-			// プレイヤーの画像の向きの変更
-			if (lrDirection_ != LRDirection::kRight) {
-				lrDirection_ = LRDirection::kRight;
-
-				// 旋回時のアニメーションのためのもの
-				turnFistRotationY_ = worldTransform_.rotation_.y;
-				turnTimer_ = 1.0f;
-			}
-
-			// 逆方向時のブレーキ処理
-			if (velocity_.x > 0.0f) {
-				velocity_.x *= (1.0f - kAttenuation);
-			}
-
-			acceleration.x -= kAcceleration;
+		if (worldTransform_.translation_.y <= 1.0f) {
+			landing = true;
 		}
-		// 速度の加算
-		velocity_.x = acceleration.x;
-
-		// 最大速度の制限
-		velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-	} else {
-		// 減衰処理
-		velocity_.x *= (1.0f - kAttenuation);
 	}
 
-	// 旋回制御
+#pragma region プレイヤーの移動処理
 
+	if (onGround_) {
+
+		if (Input::GetInstance()->PushKey(DIK_RIGHT) ||
+			Input::GetInstance()->PushKey(DIK_LEFT)
+			) {
+
+			// 別の専用の加速をついか
+			Vector3 acceleration = {};
+
+			// 移動処理
+			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+				// プレイヤーの画像の向きの変更
+				if (lrDirection_ != LRDirection::kLeft) {
+					lrDirection_ = LRDirection::kLeft;
+
+					// 旋回時のアニメーションのためのもの
+					turnFistRotationY_ = worldTransform_.rotation_.y;
+					turnTimer_ = 1.0f;
+				}
+
+				// 逆方向時のブレーキ処理
+				if (velocity_.x < 0.0f) {
+					velocity_.x *= (1.0f - kAttenuation);
+				}
+
+				acceleration.x += kAcceleration;
+			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+
+				// プレイヤーの画像の向きの変更
+				if (lrDirection_ != LRDirection::kRight) {
+					lrDirection_ = LRDirection::kRight;
+
+					// 旋回時のアニメーションのためのもの
+					turnFistRotationY_ = worldTransform_.rotation_.y;
+					turnTimer_ = 1.0f;
+				}
+
+				// 逆方向時のブレーキ処理
+				if (velocity_.x > 0.0f) {
+					velocity_.x *= (1.0f - kAttenuation);
+				}
+
+				acceleration.x -= kAcceleration;
+			}
+			// 速度の加算
+			velocity_.x = acceleration.x;
+
+			// 最大速度の制限
+			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+		} else {
+			// 減衰処理
+			velocity_.x *= (1.0f - kAttenuation);
+		}
+
+		// ジャンプの処理
+		if (Input::GetInstance()->PushKey(DIK_UP)) {
+
+			velocity_ += Vector3(0, kJumpAcceleration, 0);
+		}
+
+	} else {
+
+
+			// 落下速度
+			velocity_ += Vector3(0, -kGravityAcceleration, 0);
+			// 落下速度制限
+			velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+
+
+	//接着判定
+	if (onGround_) {
+
+		// ジャンプ開始
+		if (velocity_.y > 0.0f) {
+			// 空中状態に以降
+			onGround_ = false;
+		}
+	} else {
+		//着地判定
+		if (landing) {
+
+			// めり込み防止
+			worldTransform_.translation_.y = 1.0f;
+			//摩擦で横方向減衰
+			velocity_.x *= (1.0f - kAttenuation);
+			//下方向速度をリセット
+			velocity_.y = 0.0f;
+			//接着に移行
+			onGround_ = true;
+
+		}
+	}
+
+#pragma endregion
+
+#pragma region プレイヤーの旋回処理
+
+	// 旋回制御
 	if (turnTimer_ > 0.0f) {
 		turnTimer_ -= 1.0f / 20.0f;
 		if (turnTimer_ < 0.0f) {
@@ -101,11 +161,10 @@ void Player::Updata() {
 		worldTransform_.rotation_.y = turnFistRotationY_ + (destinationRotationY - turnFistRotationY_) * t;
 	}
 
-	// プレイヤーの移動処理
-	worldTransform_.translation_.x += velocity_.x;
-	worldTransform_.translation_.y += velocity_.y;
-	worldTransform_.translation_.z += velocity_.z;
+#pragma endregion
 
+	// プレイヤーの移動処理
+	worldTransform_.translation_ += velocity_;
 #pragma region アフィン行列の作成と行列の更新
 	// 仮のスケール・回転・平行移動値を設定
 	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(
