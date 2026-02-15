@@ -2,6 +2,7 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <cassert>
 
 // コンストラクタ（ここでメモリを確保する！）
 MapChipField::MapChipField() { mapChipData_ = new MapChipData(); }
