@@ -13,69 +13,60 @@ GameScene::GameScene() { Initialize(); }
 // 初期化処理
 void GameScene::Initialize() {
 
-	// 初期化処理の追加
-	//   トランスフォームとカメラの初期化
+#pragma region 基礎システムの初期化
 	worldTransform_.Initialize();
 	camera_.farZ = 2000;
 	camera_.Initialize();
-	debugCamera_ = new DebugCamera(1280, 720);
-	PrimitiveDrawer::GetInstance()->SetCamera(&camera_);
-
-
-	// モデルの生成
-	model_ = Model::Create();
-	Mapmodel_ = Model::Create();
-	modelSkydome_ = Model::Create();
-	modelPlayer_ = Model::Create(); 
-
-
-#pragma region 画像読み込み範囲
-
-	//textureHandle_ = TextureManager::Load("./Resources/cube/cube.jpg");
-
-	//各モデルの読み込み
-	modelMap_ = Model::CreateFromOBJ("block", true); //マップのモデルの読み込み
-	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデルを読み込む
-	modelPlayer_ = Model::CreateFromOBJ("player", true);     // ここにモデルを入れる際はモデルなどと同じ名前で
-
-
 #pragma endregion
 
-	// 引数などの受け渡しの関係上ここから下にplayerとかの初期化関数とかを追加
-
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);//x,Yの順で入れる
-
-	// playerや敵などのインスタンスの生成
+#pragma region インスタンスの生成(new)
 	player_ = new Player();
-	player_->Initialize(modelPlayer_, &camera_, playerPosition);
-
-
-	//プレイヤーの初期位置を変えれるようにgetterを追加
-	//player_->GetWorldTransform().translation_ = {2.0f, 2.0f, 0.0f};//X,Y,Zの順だよ
-
-
-
-	//スカイドームの初期化とインスタンスの生成
+	debugCamera_ = new DebugCamera(1280, 720);
 	SkyDome_ = new SkyDome();
-	SkyDome_->Initialize(modelSkydome_);
-
-
-	//マップチップの初期化とCSVファイルの読み込み
 	mapChipField_ = new MapChipField();
-	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
+	cameraController_ = new CameraController();
+#pragma endregion
 
+#pragma region モデルの読み込み
+	modelMap_ = Model::CreateFromOBJ("block", true);
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
+	modelPlayer_ = Model::CreateFromOBJ("player", true);
 
-	//ブロックの生成処理
-	GenerateBlocks();
-	
-
-	//ブロックのモデルをセッターに入れてそのまま使用できるように
+	// 描画用ポインタへの代入
 	assert(modelMap_);
 	model_ = modelMap_;
+#pragma endregion
+
+#pragma region カメラコントローラーの設定
+	cameraController_->Initialize();
+	cameraController_->SetTarget(player_);
+
+	// ここで距離の微調整が可能
+	cameraController_->targetOffset_ = {0.0f, 0.0f, -20.0f};
+	cameraController_->SetMovableArea({11, 100, 6, 100});//カメラの移動できる最大値、最少値
+	cameraController_->Reset();
+
+	// ライン描画用カメラをコントローラー側に同期
+	PrimitiveDrawer::GetInstance()->SetCamera(&cameraController_->GetCamera());
+#pragma endregion
+
+#pragma region マップ・オブジェクトの初期化
+	// マップチップ読み込み
+	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
+	GenerateBlocks();
+
+	// プレイヤー初期化 (座標計算とカメラの紐付け)
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);
+	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
+
+	// スカイドーム初期化
+	SkyDome_->Initialize(modelSkydome_);
+#pragma endregion
 }
 
+
 // 更新処理
-void GameScene::Updatta() {
+void GameScene::Updata() {
 
 #ifdef _DEBUG
 
@@ -96,8 +87,13 @@ void GameScene::Updatta() {
 		camera_.UpdateMatrix();
 	}
 
-	// 更新処理の追加
+// 1. プレイヤーの更新（まずプレイヤーが動く）
 	player_->Updata();
+
+	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
+	// ★これが抜けているので追加してください
+	cameraController_->Update();
+
 	SkyDome_->Update();
 
 	// ブロックの更新
@@ -119,25 +115,36 @@ void GameScene::Updatta() {
 
 // 描画処理
 void GameScene::Draw() {
-	// 描画処理の追加
+
+	// コントローラー側のカメラを取得
+	Camera& activeCamera = cameraController_->GetCamera();
+
+	//描画の開始位置
 	Model::PreDraw();
 
-	//model_->Draw(worldTransform_, camera_, textureHandle_);
+#pragma region 背景描画
 
-	SkyDome_->Draw(&camera_);
-	player_->Draw();
 
+	SkyDome_->Draw(&activeCamera);
+#pragma endregion
+
+
+#pragma region キャラクター描画
+	player_->Draw(); // 内部で保持しているカメラを使用
+#pragma endregion
+
+
+#pragma region マップ描画
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
-
-			if (!worldTransformBlock) {
-				continue;
+			if (worldTransformBlock) {
+				model_->Draw(*worldTransformBlock, activeCamera);
 			}
-
-			model_->Draw(*worldTransformBlock, camera_);
 		}
 	}
+#pragma endregion
 
+	//描画の終了位置
 	Model::PostDraw();
 }
 

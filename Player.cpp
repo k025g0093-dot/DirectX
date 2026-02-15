@@ -9,7 +9,8 @@ using namespace KamataEngine;
 Player::Player() {}
 
 void Player::Initialize(
-    KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
+    KamataEngine::Model* model, KamataEngine::Camera* camera, 
+	const KamataEngine::Vector3& position
 
 ) {
 
