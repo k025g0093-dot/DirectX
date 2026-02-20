@@ -265,6 +265,7 @@ void Player::CheckCollisionTop(CollisionMapInfo& info) {
 
 #pragma endregion
 
+//天井に当たったときに速度を０にする処理
 void Player::IsHitTop(const CollisionMapInfo& info) {
 
 	if (info.isFloor) {
