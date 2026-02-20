@@ -1,8 +1,8 @@
 #include "MapChipField.h"
-#include <map>
-#include <fstream>
-#include <sstream>
 #include <cassert>
+#include <fstream>
+#include <map>
+#include <sstream>
 
 // コンストラクタ（ここでメモリを確保する！）
 MapChipField::MapChipField() { mapChipData_ = new MapChipData(); }
@@ -25,8 +25,8 @@ std::map<std::string, MapChipType> mapChipTable = {
 
 void MapChipField::ResetMaoChipData() {
 
-	//マップチップのデータをリセット
-    mapChipData_->data.clear(); // 既存のデータをクリア
+	// マップチップのデータをリセット
+	mapChipData_->data.clear(); // 既存のデータをクリア
 	mapChipData_->data.resize(kNumBlockVirtical);
 	for (std::vector<MapChipType>& mapChipDataLine : mapChipData_->data) {
 		mapChipDataLine.resize(kNumBlockHorizontal);
@@ -55,23 +55,19 @@ void MapChipField::LoadMapChipCsv(const std ::string& filePath) {
 		std::string line;
 		getline(mapChipCsv, line);
 
-		//一行分の文字列をストリーム変換して解析しやすく
+		// 一行分の文字列をストリーム変換して解析しやすく
 		std::istringstream lineStream(line);
 
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-		
+
 			std::string word;
-			std::getline(lineStream, word, ',');//カンマ区切りでの読み込み
-			
+			std::getline(lineStream, word, ','); // カンマ区切りでの読み込み
+
 			if (mapChipTable.contains(word)) {
-			mapChipData_->data[i][j] = mapChipTable[word];
+				mapChipData_->data[i][j] = mapChipTable[word];
 			}
-		
 		}
-
 	}
-
-
 }
 
 MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
@@ -79,7 +75,7 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
 		return MapChipType::kBlank;
 	}
-	if (yIndex<0 || kNumBlockVirtical - 1 < yIndex) {
+	if (yIndex < 0 || kNumBlockVirtical - 1 < yIndex) {
 		return MapChipType::kBlank;
 	}
 
@@ -87,9 +83,26 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 }
 
 Vector3 MapChipField::GetMapChipPositionByIndex(
-	uint32_t xIndex, uint32_t yIndex
-) {
+	uint32_t xIndex, uint32_t yIndex) {
+	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0); 
+}
 
-	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0);
+MapChipField::IndexSet MapChipField::GetMapChipIndexSetByPosition(const KamataEngine::Vector3& position) {
+	IndexSet indexSet{};
+	indexSet.xIndex = static_cast<uint32_t>((position.x + kBlockWidth / 2) / kBlockWidth);
+	indexSet.yIndex = static_cast<uint32_t>(kNumBlockVirtical - 1 - ((position.y + kBlockHeight / 2) / kBlockHeight));
+	return indexSet;
+}
 
+MapChipField::Rect MapChipField::GetRectByIndex(uint32_t xIndex, uint32_t yIndex) {
+	// ブロックの基準位置を取得
+	KamataEngine::Vector3 pos = GetMapChipPositionByIndex(xIndex, yIndex);
+
+	Rect rect;
+	rect.left = pos.x - kBlockWidth / 2.0f;
+	rect.right = pos.x + kBlockWidth / 2.0f;
+	rect.bottom = pos.y - kBlockHeight / 2.0f;
+	rect.top = pos.y + kBlockHeight / 2.0f;
+
+	return rect;
 }

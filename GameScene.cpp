@@ -59,9 +59,13 @@ void GameScene::Initialize() {
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);
 	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
 
+	player_->SetMapChipFiled(mapChipField_);
+
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
 #pragma endregion
+
+
 }
 
 
