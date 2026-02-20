@@ -257,7 +257,7 @@ void Player::CheckCollisionTop(CollisionMapInfo& info) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_+velocity_);
 		// めり込み先ブロックの範囲矩形
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.velocity_.y = std::max(0.0f, (rect.bottom- (kHight / 2) + 0.01f));
+		info.velocity_.y = std::max(0.0f, ((worldTransform_.translation_.y)- (kHight / 2)+0.1f));
 		// 天井に当たったことを記録
 		info.isFloor = true;
 	}
