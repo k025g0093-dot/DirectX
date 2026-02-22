@@ -77,9 +77,11 @@ public:
 	void CheckCollisionTop(CollisionMapInfo& info);
 	void CheckCollisionBottom(CollisionMapInfo& info);
 
-	void CheckedMove(const CollisionMapInfo& info);
-	void IsHitTop(const CollisionMapInfo& info);
-
+	void CheckedMove(const CollisionMapInfo& info);//判定を取ってから移動
+	void IsHitTop(const CollisionMapInfo& info);//天井に当たったか
+	void IsHitWall(const CollisionMapInfo& info);
+	//着地常態化の判定関数
+	void IsGrounded(const CollisionMapInfo& info);
 
 	//キャラクターの当たり判定サイズ
 	static inline const float kWidth = 0.8f;
@@ -104,16 +106,22 @@ private: // プライベート関数群とかのその他
 #pragma region プレイヤーの移動に関するもの
 
 	// 加速度を入れるもの
-	static inline const float kAcceleration = 0.05f;
+	static inline const float kAcceleration = 0.1f;
 
 	// 減速率
 	static inline const float kAttenuation = 0.1f;
 
 	// 最大加速度の設定
-	static inline const float kLimitRunSpeed = 0.1f;
+	static inline const float kLimitRunSpeed = 0.3f;
 
 	//天井に当たった際の速度
 	static inline const float kBlank = 0.0f;
+
+	//着地時の速度減衰率
+	static inline const float kAttenuationLanding = 0.01f;
+
+	//壁接着時の速度減衰率
+	static inline const float kAttenuationWall = 0.1f;
 
 #pragma endregion
 
@@ -127,7 +135,7 @@ private: // プライベート関数群とかのその他
 	static inline const float kLimitFallSpeed = 0.5f;
 
 	// ジャンプ初速
-	static inline const float kJumpAcceleration = 0.4f;
+	static inline const float kJumpAcceleration = 0.6f;
 
 #pragma endregion
 
