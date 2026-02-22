@@ -27,8 +27,10 @@ void Player::Initialize(
 	// textureHandle_ = textureHandle;
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
-	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2;
+	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 	camera_ = camera;
+
+
 }
 
 void Player::Updata() {
@@ -103,8 +105,8 @@ void Player::MovePlayer() {
 			// 移動処理
 			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
 				// プレイヤーの画像の向きの変更
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
+				if (lrDirection_ != LRDirection::kRight) { // 今が右じゃないなら
+					lrDirection_ = LRDirection::kRight;
 
 					// 旋回時のアニメーションのためのもの
 					turnFistRotationY_ = worldTransform_.rotation_.y;
@@ -120,8 +122,8 @@ void Player::MovePlayer() {
 			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 
 				// プレイヤーの画像の向きの変更
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
+				if (lrDirection_ != LRDirection::kLeft) { // 今が左じゃないなら
+					lrDirection_ = LRDirection::kLeft;
 
 					// 旋回時のアニメーションのためのもの
 					turnFistRotationY_ = worldTransform_.rotation_.y;

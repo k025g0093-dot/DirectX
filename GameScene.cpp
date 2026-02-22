@@ -21,6 +21,7 @@ void GameScene::Initialize() {
 
 #pragma region インスタンスの生成(new)
 	player_ = new Player();
+	enemy_ = new Enemy();
 	debugCamera_ = new DebugCamera(1280, 720);
 	SkyDome_ = new SkyDome();
 	mapChipField_ = new MapChipField();
@@ -28,9 +29,10 @@ void GameScene::Initialize() {
 #pragma endregion
 
 #pragma region モデルの読み込み
-	modelMap_ = Model::CreateFromOBJ("block", true);
-	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
-	modelPlayer_ = Model::CreateFromOBJ("player", true);
+	modelMap_ = Model::CreateFromOBJ("block", true);//マップのモデル
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);//スカイドームのモデル
+	modelPlayer_ = Model::CreateFromOBJ("player", true);//プレイヤーのモデル
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);  // プレイヤーのモデル
 
 	// 描画用ポインタへの代入
 	assert(modelMap_);
@@ -57,9 +59,14 @@ void GameScene::Initialize() {
 
 	// プレイヤー初期化 (座標計算とカメラの紐付け)
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 15);
-	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
+	Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(17, 14);//敵の初期位置をここに追加
 
-	player_->SetMapChipFiled(mapChipField_);
+	//敵の初期化
+	enemy_->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
+
+	//playerの初期化とセッターによる情報の受け渡しw
+	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
+	player_->SetMapChipFiled(mapChipField_);//マップのデータをプレイヤーに渡す
 
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
@@ -93,7 +100,7 @@ void GameScene::Updata() {
 
 // 1. プレイヤーの更新（まずプレイヤーが動く）
 	player_->Updata();
-
+	enemy_->Update();
 	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
 	// ★これが抜けているので追加してください
 	cameraController_->Update();
@@ -135,6 +142,7 @@ void GameScene::Draw() {
 
 #pragma region キャラクター描画
 	player_->Draw(); // 内部で保持しているカメラを使用
+	enemy_->Draw();
 #pragma endregion
 
 
@@ -158,6 +166,7 @@ GameScene::~GameScene() {
 	delete model_;
 	delete Mapmodel_;
 	delete player_;
+	delete enemy_;
 	delete debugCamera_;
 	delete modelSkydome_;
 	delete mapChipField_;

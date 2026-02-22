@@ -5,6 +5,8 @@
 #include "SkyDome.h"
 #include "CameraController.h"
 #include <vector>
+#include "Enemy.h"
+
 
 class GameScene {
 
@@ -27,6 +29,7 @@ public:
 	KamataEngine::Model* modelSkydome_ = nullptr; // スカイドームのモデル
 	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
 	KamataEngine::Model* modelMap_ = nullptr;     // プレイヤーのモデル
+	KamataEngine::Model* modelEnemy_ = nullptr;  // プレイヤーのモデル
 
 #pragma endregion
 
@@ -44,6 +47,7 @@ public:
 	void GenerateBlocks();
 
 	Player* player_ = nullptr;
+	Enemy* enemy_ = nullptr;
 	SkyDome* SkyDome_ = nullptr;
 	MapChipField* mapChipField_;
 	CameraController* cameraController_;
