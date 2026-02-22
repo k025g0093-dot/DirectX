@@ -56,7 +56,7 @@ void GameScene::Initialize() {
 	GenerateBlocks();
 
 	// プレイヤー初期化 (座標計算とカメラの紐付け)
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 15);
 	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
 
 	player_->SetMapChipFiled(mapChipField_);
