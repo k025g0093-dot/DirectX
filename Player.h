@@ -1,6 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
-
+#include "AABB.h"
 // 角
 enum Corner {
 	kRightBottom,
@@ -12,7 +12,7 @@ enum Corner {
 };
 
 class MapChipField;
-
+class Enemy;
 class Player {
 
 public:
@@ -47,7 +47,13 @@ public:
 	void Updata();
 
 	void Draw();
+	void OnCollsion(const Enemy* enemy);
 
+
+	KamataEngine::Vector3 GetWorldPodition();
+	
+
+	AABB GetAABB();
 	// 慣性系の物
 	KamataEngine::Vector3 velocity_ = {};
 

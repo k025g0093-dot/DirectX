@@ -68,7 +68,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// 描画処理ここまで
 		//======================================================================
 
-		if (Input::GetInstance()->PushKey(DIK_W)) {
+		if (Input::GetInstance()->PushKey(DIK_ESCAPE)) {
 
 			break;
 		}

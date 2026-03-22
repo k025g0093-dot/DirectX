@@ -1,5 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
+#include "AABB.h"
+class Player;
 
 class Enemy {
 
@@ -7,6 +9,10 @@ public:
 	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
 	void Update();
 	void Draw();
+
+	KamataEngine::Vector3 GetWorldPodition();
+	AABB GetAABB();
+	void OnCollsion(const Player* player);
 
 private: // プライベート関数群とかのその他
 	// ワールドトランスフォーム

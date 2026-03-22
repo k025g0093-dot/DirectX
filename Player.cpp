@@ -8,7 +8,7 @@
 using namespace KamataEngine;
 
 Player::Player() {}
-
+bool isHit = false;
 void Player::Initialize(
     KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
 
@@ -76,11 +76,16 @@ void Player::Updata() {
 
 #pragma endregion
 
+	if (isHit) {
+
+		DebugText::GetInstance()->ConsolePrintf("hit true enemy\n");
+		isHit = false;
+	}
+
 	// プレイヤーの移動処理
 	// worldTransform_.translation_ += velocity_;
 #pragma region アフィン行列の作成と行列の更新
 	// 仮のスケール・回転・平行移動値を設定
-	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 
 	worldTransform_.TransferMatrix();
@@ -413,4 +418,32 @@ Vector3 Player::CornerPositio(const Vector3& center, Corner corner) {
 	};
 
 	return center + offsetTable[static_cast<uint32_t>(corner)];
+}
+
+Vector3 Player::GetWorldPodition() {
+
+	Vector3 worldPos;	
+	//ワールド座標の平行移動成分
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
+	return worldPos;
+}
+
+AABB Player::GetAABB() {
+
+	Vector3 worldPos = GetWorldPodition();
+
+	AABB aabb;
+
+	aabb.min = {worldPos.x - worldTransform_.scale_.x / 2.0f, worldPos.y - worldTransform_.scale_.y / 2.0f, worldPos.z - worldTransform_.scale_.z / 2.0f};
+	aabb.max = {worldPos.x + worldTransform_.scale_.x / 2.0f, worldPos.y + worldTransform_.scale_.y / 2.0f, worldPos.z + worldTransform_.scale_.z / 2.0f};
+
+	return aabb;
+}
+
+void Player::OnCollsion(const Enemy* enemy) { 
+	(void)enemy;
+	isHit = true;
+	velocity_ += Vector3(0,0.4f,0);
 }

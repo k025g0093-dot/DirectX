@@ -6,14 +6,10 @@
 
 using namespace KamataEngine;
 
-//初期化処理
-void Enemy::Initialize(
-    KamataEngine::Model* model, 
-    KamataEngine::Camera* camera, 
-    const KamataEngine::Vector3& position
-) {
+// 初期化処理
+void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
 
-    	// アフィン行列に必要な者たち
+	// アフィン行列に必要な者たち
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 	worldTransform_.rotation_ = {0.0f, 180.0f, 0.0f};
 	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
@@ -31,15 +27,15 @@ void Enemy::Initialize(
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
 	camera_ = camera;
 
-	//にメーション処理の初期化
+	// にメーション処理の初期化
 	walkTimer_ = 0.0f;
 }
 
-//更新処理
+// 更新処理
 void Enemy::Update() {
 
 	walkTimer_ += 1.0f / 60.0f;
-	float param= std::sin((std::numbers::pi_v<float> * 2.0f) * walkTimer_);
+	float param = std::sin((std::numbers::pi_v<float> * 2.0f) * walkTimer_);
 	float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	worldTransform_.rotation_.x = degree;
 	worldTransform_.translation_ += velocity_;
@@ -54,5 +50,29 @@ void Enemy::Update() {
 #pragma endregion
 }
 
-
 void Enemy::Draw() { model_->Draw(worldTransform_, *camera_); }
+
+Vector3 Enemy::GetWorldPodition() {
+
+	Vector3 worldPos;
+	// ワールド座標の平行移動成分
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
+	return worldPos;
+}
+
+AABB Enemy::GetAABB() {
+
+	Vector3 worldPos = GetWorldPodition();
+
+	AABB aabb;
+
+	aabb.min = {worldPos.x - worldTransform_.scale_.x / 2.0f, worldPos.y - worldTransform_.scale_.y / 2.0f, worldPos.z - worldTransform_.scale_.z / 2.0f};
+	aabb.max = {worldPos.x + worldTransform_.scale_.x / 2.0f, worldPos.y + worldTransform_.scale_.y / 2.0f, worldPos.z + worldTransform_.scale_.z / 2.0f};
+
+	return aabb;
+}
+
+
+void Enemy::OnCollsion(const Player* player) { (void)player; }
