@@ -6,6 +6,7 @@
 #include "MapChipField.h"
 #include "Player.h"
 #include "SkyDome.h"
+#include "DeathParticles.h"
 #include <vector>
 #include "Collision.h"
 class GameScene {
@@ -28,8 +29,9 @@ public:
 	KamataEngine::Model* Mapmodel_ = nullptr;     // マップのモデル
 	KamataEngine::Model* modelSkydome_ = nullptr; // スカイドームのモデル
 	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
-	KamataEngine::Model* modelMap_ = nullptr;     // プレイヤーのモデル
-	KamataEngine::Model* modelEnemy_ = nullptr;   // プレイヤーのモデル
+	KamataEngine::Model* modelMap_ = nullptr;     // マップのモデル
+	KamataEngine::Model* modelEnemy_ = nullptr;   // 敵のモデル
+	KamataEngine::Model* modelParticl_ = nullptr; // 敵のモデル
 
 #pragma endregion
 
@@ -51,7 +53,7 @@ public:
 	SkyDome* SkyDome_ = nullptr;
 	MapChipField* mapChipField_;
 	CameraController* cameraController_;
-
+	DeathParticles* deathParticles_ = nullptr;
 	std::list<Enemy*> enemyis_;
 
 private:

@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "AABB.h"
+#include "DeathParticles.h"
 // 角
 enum Corner {
 	kRightBottom,
@@ -13,6 +14,7 @@ enum Corner {
 
 class MapChipField;
 class Enemy;
+
 class Player {
 
 public:

@@ -25,6 +25,7 @@ void GameScene::Initialize() {
 	SkyDome_ = new SkyDome();
 	mapChipField_ = new MapChipField();
 	cameraController_ = new CameraController();
+	deathParticles_ = new DeathParticles();
 #pragma endregion
 
 #pragma region モデルの読み込み
@@ -32,7 +33,7 @@ void GameScene::Initialize() {
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデル
 	modelPlayer_ = Model::CreateFromOBJ("player", true);   // プレイヤーのモデル
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);     // プレイヤーのモデル
-
+	modelParticl_ = Model::CreateFromOBJ("player", true);  // 仮モデルでプレイヤーのモデルを使用
 	// 描画用ポインタへの代入
 	assert(modelMap_);
 	model_ = modelMap_;
@@ -77,6 +78,9 @@ void GameScene::Initialize() {
 	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
 	player_->SetMapChipFiled(mapChipField_); // マップのデータをプレイヤーに渡す
 
+	// やられたときに出るパーティクル（仮として現在プレイヤーのモデルが入っている
+	deathParticles_->Initialize(modelParticl_, &cameraController_->GetCamera(), playerPosition);
+
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
 #pragma endregion
@@ -114,6 +118,17 @@ void GameScene::Updata() {
 	cameraController_->Update();
 
 	SkyDome_->Update();
+
+	if (Input::GetInstance()->TriggerKey(DIK_E)) {
+		deathParticles_->isFinished_ = false;
+		deathParticles_->Initialize(modelParticl_, &cameraController_->GetCamera(), player_->GetWorldPodition());
+
+	}
+
+	//パーティクルの処理
+	if (!deathParticles_->isFinished_) {
+		deathParticles_->Updata();
+	}
 
 	// ブロックの更新
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
@@ -154,6 +169,11 @@ void GameScene::Draw() {
 
 		enemy->Draw();
 	}
+
+	if (!deathParticles_->isFinished_) {
+		deathParticles_->Draw();
+	}
+
 #pragma endregion
 
 #pragma region マップ描画
@@ -180,6 +200,7 @@ GameScene::~GameScene() {
 	delete debugCamera_;
 	delete modelSkydome_;
 	delete mapChipField_;
+	delete deathParticles_;
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
 			delete worldTransformBlock;

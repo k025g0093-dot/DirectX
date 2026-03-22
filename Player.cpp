@@ -6,7 +6,6 @@
 #include <numbers>
 
 using namespace KamataEngine;
-
 Player::Player() {}
 bool isHit = false;
 void Player::Initialize(
@@ -445,5 +444,6 @@ AABB Player::GetAABB() {
 void Player::OnCollsion(const Enemy* enemy) { 
 	(void)enemy;
 	isHit = true;//当たり判定確認
+
 	velocity_ += Vector3(0,0.4f,0);
 }

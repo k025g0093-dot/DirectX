@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "AABB.h"
+#include "MyMath.h"
 class Player;
 
 class Enemy {
