@@ -1,6 +1,6 @@
 #include "GameScene.h"
-#include <math\Matrix4x4.h> // 必要に応じてインクルード
 #include <cassert>
+#include <math\Matrix4x4.h> // 必要に応じてインクルード
 //===================================================
 // パブリックの処理
 //===================================================
@@ -21,7 +21,6 @@ void GameScene::Initialize() {
 
 #pragma region インスタンスの生成(new)
 	player_ = new Player();
-	enemy_ = new Enemy();
 	debugCamera_ = new DebugCamera(1280, 720);
 	SkyDome_ = new SkyDome();
 	mapChipField_ = new MapChipField();
@@ -29,10 +28,10 @@ void GameScene::Initialize() {
 #pragma endregion
 
 #pragma region モデルの読み込み
-	modelMap_ = Model::CreateFromOBJ("block", true);//マップのモデル
-	modelSkydome_ = Model::CreateFromOBJ("skydome", true);//スカイドームのモデル
-	modelPlayer_ = Model::CreateFromOBJ("player", true);//プレイヤーのモデル
-	modelEnemy_ = Model::CreateFromOBJ("enemy", true);  // プレイヤーのモデル
+	modelMap_ = Model::CreateFromOBJ("block", true);       // マップのモデル
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデル
+	modelPlayer_ = Model::CreateFromOBJ("player", true);   // プレイヤーのモデル
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);     // プレイヤーのモデル
 
 	// 描画用ポインタへの代入
 	assert(modelMap_);
@@ -45,7 +44,7 @@ void GameScene::Initialize() {
 
 	// ここで距離の微調整が可能
 	cameraController_->targetOffset_ = {0.0f, 0.0f, -20.0f};
-	cameraController_->SetMovableArea({11, 100, 6, 100});//カメラの移動できる最大値、最少値
+	cameraController_->SetMovableArea({11, 100, 6, 100}); // カメラの移動できる最大値、最少値
 	cameraController_->Reset();
 
 	// ライン描画用カメラをコントローラー側に同期
@@ -59,22 +58,29 @@ void GameScene::Initialize() {
 
 	// プレイヤー初期化 (座標計算とカメラの紐付け)
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 15);
-	Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(17, 14);//敵の初期位置をここに追加
 
-	//敵の初期化
-	enemy_->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
+	for (int32_t i = 0; i < 3; i++) {
+		// 1. 毎回新しいメモリを確保する
+		Enemy* newEnemy = new Enemy();
 
-	//playerの初期化とセッターによる情報の受け渡しw
+		// 2. 座標が重ならないように計算（例：X軸方向に5ずつずらす）
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(17 + i, 14 + i);
+
+		// 3. 新しく作った個体に対して初期化
+		newEnemy->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
+
+		// 4. vectorに追加
+		enemyis_.push_back(newEnemy);
+	}
+
+	// playerの初期化とセッターによる情報の受け渡しw
 	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
-	player_->SetMapChipFiled(mapChipField_);//マップのデータをプレイヤーに渡す
+	player_->SetMapChipFiled(mapChipField_); // マップのデータをプレイヤーに渡す
 
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
 #pragma endregion
-
-
 }
-
 
 // 更新処理
 void GameScene::Updata() {
@@ -86,7 +92,6 @@ void GameScene::Updata() {
 	}
 
 #endif // DEBUG
-
 	if (isDebugCamera_) {
 		// デバックカメラの更新処理
 		debugCamera_->Update();
@@ -98,9 +103,12 @@ void GameScene::Updata() {
 		camera_.UpdateMatrix();
 	}
 
-// 1. プレイヤーの更新（まずプレイヤーが動く）
+	// 1. プレイヤーの更新（まずプレイヤーが動く）
 	player_->Updata();
-	enemy_->Update();
+	for (Enemy* enemy : enemyis_) {
+
+		enemy->Update();
+	}
 	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
 	// ★これが抜けているので追加してください
 	cameraController_->Update();
@@ -122,6 +130,8 @@ void GameScene::Updata() {
 			worldTransformBlock->TransferMatrix();
 		}
 	}
+
+	CheckAllCollisions();
 }
 
 // 描画処理
@@ -130,21 +140,21 @@ void GameScene::Draw() {
 	// コントローラー側のカメラを取得
 	Camera& activeCamera = cameraController_->GetCamera();
 
-	//描画の開始位置
+	// 描画の開始位置
 	Model::PreDraw();
 
 #pragma region 背景描画
 
-
 	SkyDome_->Draw(&activeCamera);
 #pragma endregion
 
-
 #pragma region キャラクター描画
 	player_->Draw(); // 内部で保持しているカメラを使用
-	enemy_->Draw();
-#pragma endregion
+	for (Enemy* enemy : enemyis_) {
 
+		enemy->Draw();
+	}
+#pragma endregion
 
 #pragma region マップ描画
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
@@ -156,7 +166,7 @@ void GameScene::Draw() {
 	}
 #pragma endregion
 
-	//描画の終了位置
+	// 描画の終了位置
 	Model::PostDraw();
 }
 
@@ -175,7 +185,9 @@ GameScene::~GameScene() {
 			delete worldTransformBlock;
 		}
 	}
-
+	for (Enemy* enemy : enemyis_) {
+		delete enemy;
+	}
 	worldTransformBlocks_.clear();
 }
 //===================================================
@@ -194,20 +206,36 @@ void GameScene::GenerateBlocks() {
 	}
 
 	// キューブ生成
-// GameScene.cpp 修正後
-for (uint32_t j = 0; j < numBlockVirtical; j++) {
-    for (uint32_t i = 0; i < mumBlockHorizontal; i++) {
+	// GameScene.cpp 修正後
+	for (uint32_t j = 0; j < numBlockVirtical; j++) {
+		for (uint32_t i = 0; i < mumBlockHorizontal; i++) {
 
-        // 引数の順番を (i, j) に修正！
-        if (mapChipField_->GetMapChipTypeByIndex(i, j) == MapChipType::kBlock) {
-            
-            WorldTransform* worldTransform = new WorldTransform();
-            worldTransform->Initialize();
-            
-            worldTransformBlocks_[j][i] = worldTransform;
-            // ここは (i, j) で合っています
-            worldTransformBlocks_[j][i]->translation_ = mapChipField_->GetMapChipPositionByIndex(i, j);
-        }
-    }
+			// 引数の順番を (i, j) に修正！
+			if (mapChipField_->GetMapChipTypeByIndex(i, j) == MapChipType::kBlock) {
+
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+
+				worldTransformBlocks_[j][i] = worldTransform;
+				// ここは (i, j) で合っています
+				worldTransformBlocks_[j][i]->translation_ = mapChipField_->GetMapChipPositionByIndex(i, j);
+			}
+		}
+	}
 }
+
+void GameScene::CheckAllCollisions() {
+
+	AABB aabb1, aabb2;
+
+	aabb1 = player_->GetAABB();
+	for (Enemy* enemy : enemyis_) {
+
+		aabb2 = enemy->GetAABB();
+
+		if (IsCollision(aabb1, aabb2)) {
+			player_->OnCollsion(enemy);
+			enemy->OnCollsion(player_);
+		}
+	}
 }

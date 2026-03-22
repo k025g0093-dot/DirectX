@@ -1,13 +1,13 @@
 #pragma once
+#include "AABB.h"
+#include "CameraController.h"
+#include "Enemy.h"
 #include "KamataEngine.h"
 #include "MapChipField.h"
 #include "Player.h"
 #include "SkyDome.h"
-#include "CameraController.h"
 #include <vector>
-#include "Enemy.h"
-
-
+#include "Collision.h"
 class GameScene {
 
 public:
@@ -21,7 +21,7 @@ public:
 	KamataEngine::Camera camera_;
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 
-#pragma region	3Dに非一ようなものを呼び出すもの
+#pragma region 3Dに非一ようなものを呼び出すもの
 
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
@@ -29,7 +29,7 @@ public:
 	KamataEngine::Model* modelSkydome_ = nullptr; // スカイドームのモデル
 	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
 	KamataEngine::Model* modelMap_ = nullptr;     // プレイヤーのモデル
-	KamataEngine::Model* modelEnemy_ = nullptr;  // プレイヤーのモデル
+	KamataEngine::Model* modelEnemy_ = nullptr;   // プレイヤーのモデル
 
 #pragma endregion
 
@@ -52,7 +52,11 @@ public:
 	MapChipField* mapChipField_;
 	CameraController* cameraController_;
 
+	std::list<Enemy*> enemyis_;
+
 private:
+	void CheckAllCollisions();
+
 	uint32_t textureHandle_;
 	bool isDebugCamera_ = false;
 	// プライベートでシーンごとの旋回用の処理関数を追加
