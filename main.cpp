@@ -1,10 +1,27 @@
 #include "GameScene.h"
 #include "KamataEngine.h"
+#include "TitleScene.h"
 #include <Windows.h>
 
 // グローバルな名前を持つ蒲田エンジンを作成
 using namespace KamataEngine;
 
+GameScene* gameScene = nullptr;
+TitleScene* titleScene = nullptr;
+
+enum class Scene {
+
+	kUnknown = 0,
+	kTitle,
+	kGame,
+
+};
+
+Scene scene = Scene::kTitle;
+
+void ChangeScene();
+void UpdateScene();
+void DrawScene();
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
@@ -16,9 +33,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	KamataEngine::Initialize(L"AE2?_99_ヤマト_ユウヤ_AL2");
 	// DirectXのロード
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
-	// ゲームシーンの呼び出し
-	GameScene* gameScene = new GameScene();
 
+	scene = Scene::kTitle;
+
+	titleScene = new TitleScene();
+	titleScene->Initialize();
 	// ここから下のクラスのインスタンスなどの情報を追加
 
 	// ここから下のクラスのインスタンスなどの情報を追加
@@ -38,16 +57,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// 更新処理ここから
 		//======================================================================
 
-		// この中に更新処理などを随時追加していく
-		gameScene->Updata();
-
-		//---------------------------------------------------
-		// 更新処理ここまで
-		//---------------------------------------------------
-
-		//---------------------------------------------------
-		// 描画処理ここから
-		//---------------------------------------------------
+		ChangeScene();
+		UpdateScene();
 
 		//======================================================================
 		// 更新処理ここまで
@@ -60,7 +71,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// DirectXの描画処理を追加
 		dxCommon->PreDraw(); // ここから開始して
 
-		gameScene->Draw();
+		DrawScene();
 
 		dxCommon->PostDraw(); // ここで終了
 
@@ -81,10 +92,77 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// ゲームシーンの解放
 
 	delete gameScene;
+	delete titleScene;
 	// nullptrの代入
 	gameScene = nullptr;
+	titleScene = nullptr;
 
 	// ゲームの終了
 	KamataEngine::Finalize();
 	return 0;
+}
+
+void ChangeScene() {
+
+	switch (scene) {
+	case Scene::kTitle:
+
+		if (titleScene->IsFinished()) {
+			// シーン交換
+			scene = Scene::kGame;
+			delete titleScene;
+			titleScene = nullptr;
+
+			// 新しいシーン生成
+			gameScene = new GameScene;
+			gameScene->Initialize();
+		}
+		break;
+	case Scene::kGame:
+		if (gameScene->IsFinished()) {
+			// シーン交換
+			scene = Scene::kTitle;
+			delete gameScene;
+			gameScene = nullptr;
+
+			// 新しいシーン生成
+			titleScene = new TitleScene;
+			titleScene->Initialize();
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void UpdateScene() {
+	switch (scene) {
+	case Scene::kTitle:
+
+		titleScene->Updata();
+
+		break;
+	case Scene::kGame:
+		
+		gameScene->Updata();
+
+		break;
+	default:
+		break;
+	}
+}
+
+void DrawScene() {
+	switch (scene) {
+	case Scene::kTitle:
+
+		titleScene->Draw();
+
+		break;
+	case Scene::kGame:
+		gameScene->Draw();
+		break;
+	default:
+		break;
+	}
 }
