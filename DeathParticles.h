@@ -12,7 +12,7 @@ public:
 	void Draw();
 
 	bool isFinished_ = false;
-
+	bool IsFinished() const { return isFinished_; }
 	float counter_ = 0.0f;
 
 private:

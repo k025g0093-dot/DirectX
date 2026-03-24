@@ -1,7 +1,7 @@
 #pragma once
-#include "KamataEngine.h"
 #include "AABB.h"
 #include "DeathParticles.h"
+#include "KamataEngine.h"
 // 角
 enum Corner {
 	kRightBottom,
@@ -51,9 +51,10 @@ public:
 	void Draw();
 	void OnCollsion(const Enemy* enemy);
 
+	bool isDead_=false;
+	bool IsDead() const { return isDead_; };
 
 	KamataEngine::Vector3 GetWorldPodition();
-	
 
 	AABB GetAABB();
 	// 慣性系の物
@@ -65,7 +66,6 @@ public:
 	const KamataEngine::Vector3& GetVelocity() const { return velocity_; };
 
 	// Player.h の修正
-	// ...
 	void SetMapChipFiled(MapChipField* mapChipField) { mapChipField_ = mapChipField; } // 修正: 代入するように変更
 
 	// Player.h 53行目付近

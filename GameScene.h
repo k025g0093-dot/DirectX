@@ -9,11 +9,21 @@
 #include "DeathParticles.h"
 #include <vector>
 #include "Collision.h"
+
+enum class Phase {
+	kPlay,
+	kDeath
+};
+
+
+
 class GameScene {
 
 public:
-	GameScene();
 	~GameScene();
+	
+	//シーンに関する変数
+	Phase phase_;
 
 	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
@@ -48,6 +58,11 @@ public:
 
 	void GenerateBlocks();
 
+	//終了フラグ
+	bool finished_ = false;
+	//終了フラグ
+	bool IsFinished() const { return finished_; }
+
 	Player* player_ = nullptr;
 	Enemy* enemy_ = nullptr;
 	SkyDome* SkyDome_ = nullptr;
@@ -58,6 +73,9 @@ public:
 
 private:
 	void CheckAllCollisions();
+	void PlayeUpdate();
+	void DeathUpdate();
+	void ChangePhase();
 
 	uint32_t textureHandle_;
 	bool isDebugCamera_ = false;
