@@ -9,13 +9,11 @@ using namespace KamataEngine;
 
 // コンストラクタ
 
-
 // 初期化処理
 void GameScene::Initialize() {
 
-	//ゲームフェーズから開始
-	phase_ = Phase::kPlay;
-
+	// ゲームフェーズから開始
+	phase_ = Phase::kFadeIn;
 
 #pragma region 基礎システムの初期化
 	worldTransform_.Initialize();
@@ -30,6 +28,7 @@ void GameScene::Initialize() {
 	mapChipField_ = new MapChipField();
 	cameraController_ = new CameraController();
 	deathParticles_ = new DeathParticles();
+	fade_ = new Fade();
 #pragma endregion
 
 #pragma region モデルの読み込み
@@ -61,6 +60,8 @@ void GameScene::Initialize() {
 	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
 	GenerateBlocks();
 
+	fade_->Initialize();
+
 	// プレイヤー初期化 (座標計算とカメラの紐付け)
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 15);
 
@@ -88,24 +89,49 @@ void GameScene::Initialize() {
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
 #pragma endregion
+	
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
 
 // 更新処理
 void GameScene::Updata() {
-
+	fade_->Update();
 	switch (phase_) {
+	case Phase::kFadeIn:
+
+		// メイン待機中：スペースが押されたらフェードアウト開始
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kPlay; // 次の状態へ
+		}
+		break;
+
 	case Phase::kPlay:
 
-		//ゲーム中の処理
+		// ゲーム中の処理
 		PlayeUpdate();
 
 		break;
 	case Phase::kDeath:
 
-		//ゲームオーバ中の処理
+		// ゲームオーバ中の処理
 		DeathUpdate();
 
+		// 右端の処理：パーティクルもフェードも終わったらシーン終了
+		if (deathParticles_->IsFinished() && fade_->IsFinished()) {
+			
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			phase_ = Phase::kFadeOut;
+		}
+
 		break;
+	case Phase::kFadeOut:
+		if (fade_->IsFinished()) {
+			finished_ = true;
+
+		}
+
+		break;
+
 	default:
 		break;
 	}
@@ -150,6 +176,8 @@ void GameScene::Draw() {
 		}
 	}
 #pragma endregion
+
+	fade_->Draw();
 
 	// 描画の終了位置
 	Model::PostDraw();
@@ -233,7 +261,7 @@ void GameScene::CheckAllCollisions() {
 #pragma endregion
 
 #pragma region ゲームプレ中の処理
-//ゲームプレイ中のアップデート
+// ゲームプレイ中のアップデート
 void GameScene::PlayeUpdate() {
 #ifdef _DEBUG
 
@@ -284,25 +312,23 @@ void GameScene::PlayeUpdate() {
 	CheckAllCollisions();
 
 	if (player_->isDead_) {
-	
+
 		phase_ = Phase::kDeath;
 
 		deathParticles_->Initialize(modelParticl_, &cameraController_->GetCamera(), player_->GetWorldPodition());
 	}
-
 }
 #pragma endregion
 
 #pragma region プレイヤーの死亡中の処理
-//デス演出更新処理
+// デス演出更新処理
 void GameScene::DeathUpdate() {
-
 
 	for (Enemy* enemy : enemyis_) {
 		enemy->Update();
 	}
-	
-	//スカイドームの更新処理
+
+	// スカイドームの更新処理
 	SkyDome_->Update();
 
 	// パーティクルの処理
@@ -326,9 +352,6 @@ void GameScene::DeathUpdate() {
 		}
 	}
 
-	if (deathParticles_ && deathParticles_->IsFinished()) {
-		finished_ = true;
-	}
 
 }
 #pragma endregion

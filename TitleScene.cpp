@@ -4,6 +4,11 @@
 using namespace KamataEngine;
 
 void TitleScene::Initialize() {
+
+	fade_ = new Fade;
+	fade_->Initialize();
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
+
 	modelTitle_ = Model::CreateFromOBJ("player", true);
 	assert(modelTitle_);
 
@@ -23,8 +28,32 @@ void TitleScene::Initialize() {
 
 void TitleScene::Updata() {
 
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		finished_ = true;
+	fade_->Update();
+	
+	switch (phese_) {
+	case Phese::kFadeIn:
+		// フェードインが完全に終わるのを待つ
+		if (fade_->IsFinished()) {
+			phese_ = Phese::kMain;
+		}
+		break;
+
+	case Phese::kMain:
+		// メイン待機中：スペースが押されたらフェードアウト開始
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			phese_ = Phese::kFadeOut; // 次の状態へ
+		}
+		break;
+
+	case Phese::kFadeOut:
+		// フェードアウト中：フェードが完全に終わったら、ようやく終了フラグを立てる
+		if (fade_->IsFinished()) {
+			finished_ = true; // ここで初めて main.cpp がシーンを切り替えてくれる
+		}
+		break;
+	default:
+		break;
 	}
 
 	// --- キャラの行列更新 ---
@@ -38,17 +67,18 @@ void TitleScene::Updata() {
 }
 
 void TitleScene::Draw() {
-	// ★GameScene.cpp の 160行目〜180行目付近と全く同じ書き方です
-	// これがないと commandList が nullptr になります
 
-	// 1. 3Dモデル描画前の準備（これが必要）
 	Model::PreDraw();
-
 	// 2. 描画（引数は 3つ）
 	if (modelTitle_) {
 		modelTitle_->Draw(worldTransform_, camera_, &objectColor_);
 	}
+	fade_->Draw();
 
 	// 3. 3Dモデル描画後の終了処理
 	Model::PostDraw();
+}
+
+TitleScene::~TitleScene() {
+	delete fade_;
 }

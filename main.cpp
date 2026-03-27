@@ -102,6 +102,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	return 0;
 }
 
+#pragma region	ゲームのシーンの切り替え
 void ChangeScene() {
 
 	switch (scene) {
@@ -134,7 +135,8 @@ void ChangeScene() {
 		break;
 	}
 }
-
+#pragma endregion
+#pragma region	ゲームの更新処理
 void UpdateScene() {
 	switch (scene) {
 	case Scene::kTitle:
@@ -151,7 +153,8 @@ void UpdateScene() {
 		break;
 	}
 }
-
+#pragma endregion
+#pragma region ゲームシーンの描画
 void DrawScene() {
 	switch (scene) {
 	case Scene::kTitle:
@@ -166,3 +169,4 @@ void DrawScene() {
 		break;
 	}
 }
+#pragma endregion

@@ -1,28 +1,23 @@
 #pragma once
 #include "AABB.h"
 #include "CameraController.h"
+#include "Collision.h"
+#include "DeathParticles.h"
 #include "Enemy.h"
 #include "KamataEngine.h"
 #include "MapChipField.h"
 #include "Player.h"
 #include "SkyDome.h"
-#include "DeathParticles.h"
 #include <vector>
-#include "Collision.h"
-
-enum class Phase {
-	kPlay,
-	kDeath
-};
-
-
+#include "Fade.h"
+enum class Phase {kFadeIn, kPlay, kDeath,kFadeOut };
 
 class GameScene {
 
 public:
 	~GameScene();
-	
-	//シーンに関する変数
+
+	// シーンに関する変数
 	Phase phase_;
 
 	// ワールドトランスフォーム
@@ -58,9 +53,9 @@ public:
 
 	void GenerateBlocks();
 
-	//終了フラグ
+	// 終了フラグ
 	bool finished_ = false;
-	//終了フラグ
+	// 終了フラグ
 	bool IsFinished() const { return finished_; }
 
 	Player* player_ = nullptr;
@@ -70,12 +65,12 @@ public:
 	CameraController* cameraController_;
 	DeathParticles* deathParticles_ = nullptr;
 	std::list<Enemy*> enemyis_;
+	Fade* fade_ = nullptr;
 
 private:
 	void CheckAllCollisions();
 	void PlayeUpdate();
 	void DeathUpdate();
-	void ChangePhase();
 
 	uint32_t textureHandle_;
 	bool isDebugCamera_ = false;
