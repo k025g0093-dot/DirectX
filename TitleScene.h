@@ -1,10 +1,19 @@
 #pragma once
 #include "CameraController.h"
+#include "Fade.h"
 #include "KamataEngine.h"
 #include <vector>
 
+
 class TitleScene {
 public:
+
+	enum class Phese { 
+		kFadeIn,
+		kMain,
+		kFadeOut,
+	};
+	Phese phese_ = Phese::kFadeIn;
 	// 初期化関数
 	void Initialize();
 	// 更新処理
@@ -12,9 +21,13 @@ public:
 
 	void Draw();
 
+	~TitleScene();
+
 	bool finished_ = false;
 
 	bool IsFinished() const { return finished_; }
+
+	Fade* fade_ = nullptr;
 
 private:
 	// ワールドトランスフォーム
