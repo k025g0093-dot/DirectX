@@ -28,13 +28,76 @@ void Player::Initialize(
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 	camera_ = camera;
-
-
 }
 
 void Player::Updata() {
 
-	// onGround_ = false;
+#pragma region ビヘイビアの切り替え処理と初期化
+	if (behaviorRequest_ != Behavior::kUnknown) {
+
+		behavior_ = behaviorRequest_;
+		switch (behavior_) {
+		case Behavior::kRoot:
+
+			break;
+		case Behavior::kAttack:
+			attackCounter_ = 0;
+			break;
+		default:
+			break;
+		}
+		behaviorRequest_ = Behavior::kUnknown;
+	}
+#pragma endregion
+
+#pragma region ビヘイビアによる各更新処理
+
+	switch (behavior_) {
+	case Behavior::kRoot://通常状態の更新処理
+		BehaviorRootUpdate();
+
+		if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+			behaviorRequest_ = Behavior::kAttack;
+		}
+
+		break;
+	case Behavior::kAttack://攻撃の更新
+		BehaviorAttackUpdate();
+
+		attackCounter_++;
+
+		if (attackCounter_ >= 10) {
+		behaviorRequest_ = Behavior::kRoot;
+		}
+		
+		break;
+	default:
+		break;
+	}
+#pragma endregion
+
+#pragma region アフィン行列の作成と行列の更新
+	// 仮のスケール・回転・平行移動値を設定
+	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+
+	worldTransform_.TransferMatrix();
+
+#pragma endregion
+}
+
+void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
+
+Player::~Player() {}
+
+#pragma region ビヘイビアに関する処理（リセットと更新）
+
+// リセット処理
+void Player::BehaviorRootInitialize() {}
+
+void Player::BehaviorAttackInitialize() {}
+
+// 通常更新処理
+void Player::BehaviorRootUpdate() {
 #pragma region プレイヤーの移動処理
 
 	MovePlayer();
@@ -74,27 +137,31 @@ void Player::Updata() {
 	}
 
 #pragma endregion
+}
 
-	if (isHit) {
+// 攻撃
+void Player::BehaviorAttackUpdate() {
+#pragma region プレイヤーの攻撃処理
 
-		DebugText::GetInstance()->ConsolePrintf("hit true enemy\n");
-		isHit = false;
-	}
+	// 速度を増やす（＝加速）
+	velocity_.x += kAcceleration;
 
-	// プレイヤーの移動処理
-	// worldTransform_.translation_ += velocity_;
-#pragma region アフィン行列の作成と行列の更新
-	// 仮のスケール・回転・平行移動値を設定
-	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+	// 足し終わった後の速度に制限をかける（これだけでOK）
+	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 
-	worldTransform_.TransferMatrix();
+	// 2. ★攻撃中も移動と判定を行う★
+	CollisionMapInfo collisionMapInfo;
+	collisionMapInfo.velocity_ = velocity_;
 
+	// マップとの衝突判定
+	MapCollsion(collisionMapInfo);
+
+	// 実際に座標を動かす
+	CheckedMove(collisionMapInfo);
 #pragma endregion
 }
 
-void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
-
-Player::~Player() {}
+#pragma endregion
 
 void Player::MovePlayer() {
 
@@ -156,9 +223,6 @@ void Player::MovePlayer() {
 
 			velocity_ += Vector3(0, kJumpAcceleration, 0);
 		}
-
-#pragma endregion
-
 	} else {
 
 		// 落下速度
@@ -166,6 +230,9 @@ void Player::MovePlayer() {
 		// 落下速度制限
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
+#pragma endregion
+
+
 }
 
 void Player::CheckedMove(const CollisionMapInfo& info) { worldTransform_.translation_ += info.velocity_; }
@@ -421,8 +488,8 @@ Vector3 Player::CornerPositio(const Vector3& center, Corner corner) {
 
 Vector3 Player::GetWorldPodition() {
 
-	Vector3 worldPos;	
-	//ワールド座標の平行移動成分
+	Vector3 worldPos;
+	// ワールド座標の平行移動成分
 	worldPos.x = worldTransform_.matWorld_.m[3][0];
 	worldPos.y = worldTransform_.matWorld_.m[3][1];
 	worldPos.z = worldTransform_.matWorld_.m[3][2];
@@ -441,9 +508,9 @@ AABB Player::GetAABB() {
 	return aabb;
 }
 
-void Player::OnCollsion(const Enemy* enemy) { 
+void Player::OnCollsion(const Enemy* enemy) {
 	(void)enemy;
 	isDead_ = true; // 当たり判定確認
 
-	velocity_ += Vector3(0,0.4f,0);
+	velocity_ += Vector3(0, 0.4f, 0);
 }

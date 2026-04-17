@@ -17,8 +17,8 @@ void GameScene::Initialize() {
 
 #pragma region 基礎システムの初期化
 	worldTransform_.Initialize();
-	camera_.farZ = 2000;
 	camera_.Initialize();
+	camera_.farZ = 2000;
 #pragma endregion
 
 #pragma region インスタンスの生成(new)

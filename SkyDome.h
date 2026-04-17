@@ -4,14 +4,14 @@
 class SkyDome {
 
 public:
-	//SkyDome();
+	// SkyDome();
 	/*~SkyDome();*/
 	// 引数にモデルのポインタを追加
 	void Initialize(KamataEngine::Model* model);
 
 	void Update();
 
-	void Draw(KamataEngine::Camera *camera);
+	void Draw(KamataEngine::Camera* camera);
 
 private:
 	KamataEngine::Camera camera_;
@@ -19,7 +19,4 @@ private:
 	KamataEngine::WorldTransform worldTransform_;
 
 	KamataEngine::Model* model_ = nullptr;
-
-
-
 };
