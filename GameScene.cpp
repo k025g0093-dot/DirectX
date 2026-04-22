@@ -190,7 +190,6 @@ GameScene::~GameScene() {
 	delete model_;
 	delete Mapmodel_;
 	delete player_;
-	delete enemy_;
 	delete debugCamera_;
 	delete modelSkydome_;
 	delete mapChipField_;
