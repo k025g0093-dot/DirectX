@@ -17,8 +17,8 @@ void GameScene::Initialize() {
 
 #pragma region 基礎システムの初期化
 	worldTransform_.Initialize();
-	camera_.farZ = 2000;
 	camera_.Initialize();
+	camera_.farZ = 2000;
 #pragma endregion
 
 #pragma region インスタンスの生成(new)
@@ -186,15 +186,19 @@ void GameScene::Draw() {
 #pragma region デストラクタ
 // デストラクタ（解放エクササイズ）
 GameScene::~GameScene() {
-	// モデルの解放
-	delete model_;
-	delete Mapmodel_;
-	delete player_;
-	delete enemy_;
-	delete debugCamera_;
+	delete modelMap_; // model_ は modelMap_ の別名なので modelMap_ だけ delete
 	delete modelSkydome_;
+	delete modelPlayer_;  // 追加
+	delete modelEnemy_;   // 追加
+	delete modelParticl_; // 追加
+	delete player_;
+	delete debugCamera_;
 	delete mapChipField_;
 	delete deathParticles_;
+	delete cameraController_;
+	delete SkyDome_;
+	delete fade_;
+
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
 			delete worldTransformBlock;
@@ -205,6 +209,8 @@ GameScene::~GameScene() {
 	}
 	worldTransformBlocks_.clear();
 }
+
+
 #pragma endregion
 //===================================================
 // プライベート内の処理

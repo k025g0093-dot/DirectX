@@ -12,6 +12,12 @@ enum Corner {
 	kNumCorner // 要素数
 };
 
+enum class Behavior {
+	kRoot,//(通常状態を表す)
+	kAttack,//(攻撃状態を表す)
+	kUnknown
+};
+
 class MapChipField;
 class Enemy;
 
@@ -54,6 +60,11 @@ public:
 	bool isDead_=false;
 	bool IsDead() const { return isDead_; };
 
+	//現在のビヘイビアを表す変数
+	Behavior behavior_ = Behavior::kRoot;
+
+	Behavior behaviorRequest_ = Behavior ::kUnknown;
+
 	KamataEngine::Vector3 GetWorldPodition();
 
 	AABB GetAABB();
@@ -94,6 +105,8 @@ public:
 	static inline const float kHight = 0.8f;
 
 	static KamataEngine::Vector3 CornerPositio(const KamataEngine::Vector3& center, Corner corner);
+
+
 
 private: // プライベート関数群とかのその他
 	// ワールドトランスフォーム
@@ -144,9 +157,23 @@ private: // プライベート関数群とかのその他
 
 #pragma endregion
 
+	//攻撃ギミックの経過カウンター
+	uint32_t attackCounter_ = 0;
+
 	// 旋回時間＜秒＞
 	static inline const float kTimeTrun = 0.3f;
 
 	// プライベート関数
 	void MovePlayer();
+
+	//通常行動の初期化
+	void BehaviorRootInitialize();
+	//攻撃行動の初期化
+	void BehaviorAttackInitialize();
+
+	//通常更新処理
+	void BehaviorRootUpdate(); 
+	//プレイヤーの攻撃更新処理
+	void BehaviorAttackUpdate();
+
 };
