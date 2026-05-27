@@ -81,8 +81,8 @@ public:
 
 	// Player.h 53行目付近
 	struct CollisionMapInfo {
-		bool isRoof = false;  // 天井
-		bool isFloor = false; // 着地
+		bool isFloor = false;   // 天井
+		bool isCeiling = false; // 着地
 		bool isWall = false;  // 壁
 		KamataEngine::Vector3 velocity_;
 	};
