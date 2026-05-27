@@ -225,18 +225,26 @@ void Player::CheckCollisionRight(CollisionMapInfo& info) {
 			positionsNew[i] = CornerPositio(worldTransform_.translation_ + info.velocity_, static_cast<Corner>(i));
 		}
 
+		MapChipType mapChipType;
+		MapChipType mapChipTypeNext;
 		MapChipField::IndexSet indexSet;
 		bool hit = false;
 		MapChipField::IndexSet hitIndex{};
 
+		// 右上点の判定（隣接セル：左方向）
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop] + Vector3(0.1f, 0, 0));
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, indexSet.yIndex);
+		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
 			hitIndex = indexSet;
 		}
 
+		// 右下点の判定（隣接セル：左方向）
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(0.1f, 0.5f, 0));
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, indexSet.yIndex);
+		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
 			hitIndex = indexSet;
 		}
@@ -257,18 +265,26 @@ void Player::CheckCollisionLeft(CollisionMapInfo& info) {
 			positionsNew[i] = CornerPositio(worldTransform_.translation_ + info.velocity_, static_cast<Corner>(i));
 		}
 
+		MapChipType mapChipType;
+		MapChipType mapChipTypeNext;
 		MapChipField::IndexSet indexSet;
 		bool hit = false;
 		MapChipField::IndexSet hitIndex{};
 
+		// 左上点の判定（隣接セル：右方向）
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop] + Vector3(-0.1f, 0, 0));
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + 1, indexSet.yIndex);
+		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
 			hitIndex = indexSet;
 		}
 
+		// 左下点の判定（隣接セル：右方向）
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-0.1f, 0.5f, 0));
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + 1, indexSet.yIndex);
+		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
 			hitIndex = indexSet;
 		}
@@ -300,18 +316,27 @@ void Player::CheckCollisionTop(CollisionMapInfo& info) {
 			positionsNew[i] = CornerPositio(worldTransform_.translation_ + info.velocity_, static_cast<Corner>(i));
 		}
 
+		MapChipType mapChipType;
+		MapChipType mapChipTypeNext;
 		MapChipField::IndexSet indexSet;
 		bool hit = false;
 		MapChipField::IndexSet hitIndex{};
 
+		// 左上点の判定
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
+		// 隣接セルがともにブロックでなければヒット（連続した壁対応）
+		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
 			hitIndex = indexSet;
 		}
 
+		// 右上点の判定
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
+		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
 			hitIndex = indexSet;
 		}
@@ -320,7 +345,7 @@ void Player::CheckCollisionTop(CollisionMapInfo& info) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(hitIndex.xIndex, hitIndex.yIndex);
 			float newVelocityY = (rect.bottom - worldTransform_.translation_.y) - (kHight / 2.0f) - 0.01f;
 			info.velocity_.y = std::min(0.0f, newVelocityY);
-			info.isCeiling = true; // 修正: isFloor → isCeiling（天井判定のため）
+			info.isCeiling = true;
 		}
 	}
 }
@@ -347,23 +372,32 @@ void Player::CheckCollisionBottom(CollisionMapInfo& info) {
 		positionsNew[i] = CornerPositio(worldTransform_.translation_ + info.velocity_, static_cast<Corner>(i));
 	}
 
+	MapChipType mapChipType;
+	MapChipType mapChipTypeNext;
 	MapChipField::IndexSet indexSet;
 	bool hit = false;
 
+	// 左下点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	// 隣接セルがともにブロックでなければヒット（連続した壁対応）
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
-	} else {
-		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
-		if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
-			hit = true;
-		}
+	}
+
+	// 右下点の判定
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
+		hit = true;
 	}
 
 	if (hit) {
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		info.velocity_.y = (rect.top - worldTransform_.translation_.y) + (kHight / 2.0f) + 0.01f;
-		info.isFloor = true; // 修正: isRoof → isFloor（地面判定のため）
+		info.isFloor = true;
 	}
 }
 
