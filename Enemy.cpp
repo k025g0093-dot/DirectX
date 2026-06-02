@@ -43,7 +43,6 @@ void Enemy::Update() {
 #pragma region アフィン行列の作成と行列の更新
 	// 仮のスケール・回転・平行移動値を設定
 	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
-	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 
 	worldTransform_.TransferMatrix();
 
