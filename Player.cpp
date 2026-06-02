@@ -54,7 +54,7 @@ void Player::Updata() {
 	case Behavior::kRoot:
 		BehaviorRootUpdate();
 
-		if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			behaviorRequest_ = Behavior::kAttack;
 		}
 
@@ -136,14 +136,22 @@ void Player::BehaviorAttackUpdate() {
 #pragma region プレイヤーの攻撃処理
 
 	velocity_.x += kAcceleration;
-
 	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 
 	CollisionMapInfo collisionMapInfo;
 	collisionMapInfo.velocity_ = velocity_;
 
+	// 1. 衝突判定と押し戻し量の計算
 	MapCollsion(collisionMapInfo);
 
+	// 【★追加】壁衝突後の減衰
+	IsHitWall(collisionMapInfo);
+
+	// 【★追加】攻撃中も地面や天井の判定を行い、大元の速度（velocity_）をリセットする
+	IsHitTop(collisionMapInfo);
+	IsGrounded(collisionMapInfo);
+
+	// 最後に一回だけ座標を確定させる
 	CheckedMove(collisionMapInfo);
 #pragma endregion
 }
@@ -320,16 +328,15 @@ void Player::CheckCollisionTop(CollisionMapInfo& info) {
 		MapChipType mapChipTypeNext;
 		MapChipField::IndexSet indexSet;
 		bool hit = false;
-		MapChipField::IndexSet hitIndex{};
+		Corner hitCorner = kLeftTop; // ★ヒットした角を保持する変数を追加
 
 		// 左上点の判定
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
 		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
-		// 隣接セルがともにブロックでなければヒット（連続した壁対応）
 		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
-			hitIndex = indexSet;
+			hitCorner = kLeftTop;
 		}
 
 		// 右上点の判定
@@ -338,14 +345,26 @@ void Player::CheckCollisionTop(CollisionMapInfo& info) {
 		mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 		if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 			hit = true;
-			hitIndex = indexSet;
+			hitCorner = kRightTop;
 		}
 
 		if (hit) {
-			MapChipField::Rect rect = mapChipField_->GetRectByIndex(hitIndex.xIndex, hitIndex.yIndex);
-			float newVelocityY = (rect.bottom - worldTransform_.translation_.y) - (kHight / 2.0f) - 0.01f;
-			info.velocity_.y = std::min(0.0f, newVelocityY);
-			info.isCeiling = true;
+			// ヒットした角の移動後のインデックスを正確に取得
+			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[hitCorner]);
+
+			// ★移動前（現在）のインデックスを取得
+			MapChipField::IndexSet indexSetNow;
+			indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPositio(worldTransform_.translation_, hitCorner));
+
+			// ★移動前と移動後のyインデックスが異なる（天井を突き抜ける瞬間）なら判定する
+			if (indexSetNow.yIndex != indexSet.yIndex) {
+				MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+				float newVelocityY = (rect.bottom - worldTransform_.translation_.y) - (kHight / 2.0f) - 0.01f;
+
+				// ★std::min を外して、計算した押し戻し量をそのまま代入
+				info.velocity_.y = newVelocityY;
+				info.isCeiling = true;
+			}
 		}
 	}
 }
@@ -376,14 +395,15 @@ void Player::CheckCollisionBottom(CollisionMapInfo& info) {
 	MapChipType mapChipTypeNext;
 	MapChipField::IndexSet indexSet;
 	bool hit = false;
+	Corner hitCorner = kLeftBottom; // ★ヒットした角を保持する変数を追加
 
 	// 左下点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
-	// 隣接セルがともにブロックでなければヒット（連続した壁対応）
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
+		hitCorner = kLeftBottom; // ★左下でヒット
 	}
 
 	// 右下点の判定
@@ -392,12 +412,29 @@ void Player::CheckCollisionBottom(CollisionMapInfo& info) {
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
+		hitCorner = kRightBottom; // ★右下でヒット
 	}
 
 	if (hit) {
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.velocity_.y = (rect.top - worldTransform_.translation_.y) + (kHight / 2.0f) + 0.01f;
-		info.isFloor = true;
+		// ヒットした角の移動後のインデックスを正確に取得
+		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[hitCorner]);
+
+		// 移動前（現在）のインデックスを取得
+		MapChipField::IndexSet indexSetNow;
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPositio(worldTransform_.translation_, hitCorner));
+
+		// 移動前と移動後のyインデックスが異なる（床を突き抜ける瞬間）なら判定する
+		if (indexSetNow.yIndex != indexSet.yIndex) {
+			// めり込み先ブロックの範囲矩形
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			float newVelocityY = (rect.top - worldTransform_.translation_.y) + (kHight / 2.0f) + 0.01f;
+
+			// 【★修正】std::min を外して、計算した押し戻し量をそのまま入れる
+			info.velocity_.y = newVelocityY;
+
+			// 地面に当たったことを記録する
+			info.isFloor = true;
+		}
 	}
 }
 
