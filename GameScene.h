@@ -34,6 +34,7 @@ public:
 	KamataEngine::Model* Mapmodel_ = nullptr;     // マップのモデル
 	KamataEngine::Model* modelSkydome_ = nullptr; // スカイドームのモデル
 	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
+	KamataEngine::Model* modelAttack_ = nullptr;  // プレイヤーの攻撃モデル
 	KamataEngine::Model* modelMap_ = nullptr;     // マップのモデル
 	KamataEngine::Model* modelEnemy_ = nullptr;   // 敵のモデル
 	KamataEngine::Model* modelParticl_ = nullptr; // 敵のモデル
