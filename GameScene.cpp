@@ -339,7 +339,7 @@ void GameScene::DeathUpdate() {
 
 	// パーティクルの処理
 	if (!deathParticles_->isFinished_) {
-		deathParticles_->Updata();
+		deathParticles_->Update();
 	}
 
 	// ブロックの更新
