@@ -9,7 +9,10 @@ using namespace KamataEngine;
 Player::Player() {}
 bool isHit = false;
 void Player::Initialize(
-    KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
+    KamataEngine::Model* model, 
+	KamataEngine::Model* modelAttack,
+	KamataEngine::Camera* camera,
+	const KamataEngine::Vector3& position
 
 ) {
 
@@ -20,9 +23,13 @@ void Player::Initialize(
 	velocity_ = {0.0f, 0.0f, 0.0f};
 
 	assert(model);
+	assert(modelAttack);
+	modelAttack_ = modelAttack;
 	model_ = model;
 
 	worldTransform_.Initialize();
+	worldTransformAttack_.Initialize();
+
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 	camera_ = camera;
@@ -61,10 +68,13 @@ void Player::Updata() {
 		break;
 	case Behavior::kAttack:
 		BehaviorAttackUpdate();
-
 		attackCounter_++;
 
+
 		if (attackCounter_ >= 10) {
+			velocity_.x = 0.0f; // 攻撃終了後に横方向の速度をリセット
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+			kAttackPhase_ = AttackPhase::kSave; // ★ 次の攻撃に備えてリセット
 			behaviorRequest_ = Behavior::kRoot;
 		}
 
@@ -78,10 +88,21 @@ void Player::Updata() {
 	worldTransform_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 
 	worldTransform_.TransferMatrix();
+
+	if (behavior_ == Behavior::kAttack) {
+		worldTransformAttack_.matWorld_ = KamataEngine::Matrix4x4::MakeAffineMatrix(worldTransformAttack_.scale_, worldTransformAttack_.rotation_, worldTransformAttack_.translation_);
+		worldTransformAttack_.TransferMatrix();
+	}
 #pragma endregion
 }
 
-void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
+void Player::Draw() { 
+	model_->Draw(worldTransform_, *camera_);
+	if (behavior_ == Behavior::kAttack) {
+		modelAttack_->Draw(worldTransformAttack_, *camera_);
+	}
+
+}
 
 Player::~Player() {}
 
@@ -98,17 +119,13 @@ void Player::BehaviorRootUpdate() {
 
 	CollisionMapInfo collisionMapInfo;
 	collisionMapInfo.velocity_ = velocity_;
-
 	// 1. 衝突判定と押し戻し量の計算
 	MapCollsion(collisionMapInfo);
-
 	// 2. 壁衝突後の減衰（MapCollsion の後に呼ぶことで isWall フラグが正しく参照される）
 	IsHitWall(collisionMapInfo);
-
 	// 3. 状態判定（座標を動かす前に、計算された移動量を使って判定を済ませる）
 	IsHitTop(collisionMapInfo);
 	IsGrounded(collisionMapInfo);
-
 	// 4. 最後に一回だけ座標を確定させる
 	CheckedMove(collisionMapInfo);
 #pragma endregion
@@ -135,12 +152,68 @@ void Player::BehaviorRootUpdate() {
 void Player::BehaviorAttackUpdate() {
 #pragma region プレイヤーの攻撃処理
 
-	velocity_.x += kAcceleration;
+	if (lrDirection_ == LRDirection::kRight) {
+		velocity_.x += kAcceleration;
+	} else if (lrDirection_ == LRDirection::kLeft) {
+		velocity_.x += -kAcceleration;
+	}
 	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+	velocity_.y = 0;
+
+
+	Vector3 offset;
+	if (lrDirection_ == LRDirection::kRight) {
+		offset = Vector3(0.8f, 0.0f, 0.0f); // 右方向に0.8ユニット前
+	} else if (lrDirection_ == LRDirection::kLeft) {
+		offset = Vector3(-0.8f, 0.0f, 0.0f); // 左方向に0.8ユニット前
+	}
+
+	worldTransformAttack_.translation_ = worldTransform_.translation_ + offset;
+	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+
+	switch (kAttackPhase_) {
+	case AttackPhase::kSave: // 溜め
+	{
+		float t = static_cast<float>(attackCounter_) / 10.0f;
+		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);
+		worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);
+		if (attackCounter_ >= 10) {
+			kAttackPhase_ = AttackPhase::kCharge;
+			attackCounter_ = 0;
+		}
+		break;
+	}
+	case AttackPhase::kCharge: // 突進動作
+	{
+
+		if (lrDirection_ == LRDirection::kRight) {
+			velocity_.x = kAttackSpeed;
+		} else if (lrDirection_ == LRDirection::kLeft) {
+			velocity_.x = -kAttackSpeed;
+		}
+
+		float t = static_cast<float>(attackCounter_) / 10.0f;
+		worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
+		worldTransform_.scale_.y = EaseOut(1.6f, 0.7f, t);
+		if (attackCounter_ >= 10) {
+			kAttackPhase_ = AttackPhase::kAfterglow; // ★ kAfterglowに変更
+			attackCounter_ = 0;
+		}
+		break;
+	}
+	case AttackPhase::kAfterglow: // 余韻動作
+	{
+		float t = static_cast<float>(attackCounter_) / 10.0f;
+		worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
+		worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
+		break;
+	}
+	default:
+		break;
+	}
 
 	CollisionMapInfo collisionMapInfo;
 	collisionMapInfo.velocity_ = velocity_;
-
 	// 1. 衝突判定と押し戻し量の計算
 	MapCollsion(collisionMapInfo);
 
@@ -524,4 +597,10 @@ void Player::OnCollsion(const Enemy* enemy) {
 	isDead_ = true;
 
 	velocity_ += Vector3(0, 0.4f, 0);
+}
+
+float Player::EaseOut(float start, float end, float t) {
+	// t は 0〜1 の値
+	// Quadratic EaseOut の計算
+	return start + (end - start) * (1.0f - (1.0f - t) * (1.0f - t));
 }

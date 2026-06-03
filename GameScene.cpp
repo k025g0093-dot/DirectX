@@ -35,7 +35,8 @@ void GameScene::Initialize() {
 	modelMap_ = Model::CreateFromOBJ("block", true);       // マップのモデル
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデル
 	modelPlayer_ = Model::CreateFromOBJ("player", true);   // プレイヤーのモデル
-	modelEnemy_ = Model::CreateFromOBJ("enemy", true);     // プレイヤーのモデル
+	modelAttack_ = Model::CreateFromOBJ("hit_effect", true); // プレイヤーの攻撃モデル
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);     // 敵のモデル
 	modelParticl_ = Model::CreateFromOBJ("player", true);  // 仮モデルでプレイヤーのモデルを使用
 	// 描画用ポインタへの代入
 	assert(modelMap_);
@@ -80,7 +81,7 @@ void GameScene::Initialize() {
 	}
 
 	// playerの初期化とセッターによる情報の受け渡しw
-	player_->Initialize(modelPlayer_, &cameraController_->GetCamera(), playerPosition);
+	player_->Initialize(modelPlayer_, modelAttack_, &cameraController_->GetCamera(), playerPosition);
 	player_->SetMapChipFiled(mapChipField_); // マップのデータをプレイヤーに渡す
 
 	// やられたときに出るパーティクル（仮として現在プレイヤーのモデルが入っている
@@ -190,6 +191,7 @@ GameScene::~GameScene() {
 	delete modelMap_; // model_ は modelMap_ の別名なので modelMap_ だけ delete
 	delete modelSkydome_;
 	delete modelPlayer_;  // 追加
+	delete modelAttack_;  // 追加
 	delete modelEnemy_;   // 追加
 	delete modelParticl_; // 追加
 	delete player_;

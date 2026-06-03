@@ -18,6 +18,12 @@ enum class Behavior {
 	kUnknown
 };
 
+enum class AttackPhase { 
+	kSave, 
+	kCharge,
+	kAfterglow
+};
+
 class MapChipField;
 class Enemy;
 
@@ -44,12 +50,15 @@ public:
 
 #pragma endregion
 
+	KamataEngine::Model* modelAttack_ = nullptr;
+	KamataEngine::WorldTransform worldTransformAttack_;
+
 	// コンストラクタとデストラクタ
 	Player();
 	~Player();
 
 	// 初期化関数
-	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
+	void Initialize(KamataEngine::Model* model, KamataEngine::Model* modelAttack, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
 
 	// 更新処理
 	void Updata();
@@ -157,12 +166,14 @@ private: // プライベート関数群とかのその他
 
 #pragma endregion
 
+	AttackPhase kAttackPhase_ = AttackPhase::kSave;
+
 	//攻撃ギミックの経過カウンター
 	uint32_t attackCounter_ = 0;
 
 	// 旋回時間＜秒＞
 	static inline const float kTimeTrun = 0.3f;
-
+	static constexpr float kAttackSpeed = 0.5f;
 	// プライベート関数
 	void MovePlayer();
 
@@ -176,4 +187,5 @@ private: // プライベート関数群とかのその他
 	//プレイヤーの攻撃更新処理
 	void BehaviorAttackUpdate();
 
+	float EaseOut(float start, float end, float t);
 };
