@@ -13,7 +13,7 @@ using namespace KamataEngine;
 void GameScene::Initialize() {
 
 	// ゲームフェーズから開始
-	phase_ = Phase::kFadeIn;
+	phase_ = Phase::kPlay;
 
 #pragma region 基礎システムの初期化
 	worldTransform_.Initialize();
@@ -89,12 +89,13 @@ void GameScene::Initialize() {
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
 #pragma endregion
-	
+
+
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
 
 // 更新処理
-void GameScene::Updata() {
+void GameScene::Update() {
 	fade_->Update();
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -134,7 +135,7 @@ void GameScene::Updata() {
 
 	default:
 		break;
-	}
+	}	
 }
 
 // 描画処理

@@ -46,7 +46,7 @@ public:
 	void Initialize();
 
 	// 更新処理関数
-	void Updata();
+	void Update();
 
 	// 描画処理
 	void Draw();

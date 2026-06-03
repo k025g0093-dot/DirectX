@@ -26,15 +26,15 @@ void TitleScene::Initialize() {
 	camera_.translation_ = {0.0f, 0.5f, -5.0f};
 }
 
-void TitleScene::Updata() {
+void TitleScene::Update() {
 
 	fade_->Update();
 	
-	switch (phese_) {
+	switch (phase_) {
 	case Phese::kFadeIn:
 		// フェードインが完全に終わるのを待つ
 		if (fade_->IsFinished()) {
-			phese_ = Phese::kMain;
+			phase_ = Phese::kMain;
 		}
 		break;
 
@@ -42,7 +42,7 @@ void TitleScene::Updata() {
 		// メイン待機中：スペースが押されたらフェードアウト開始
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			phese_ = Phese::kFadeOut; // 次の状態へ
+			phase_ = Phese::kFadeOut; // 次の状態へ
 		}
 		break;
 
