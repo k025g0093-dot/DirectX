@@ -13,11 +13,11 @@ public:
 		kMain,
 		kFadeOut,
 	};
-	Phese phese_ = Phese::kFadeIn;
+	Phese phase_ = Phese::kFadeIn;
 	// 初期化関数
 	void Initialize();
 	// 更新処理
-	void Updata();
+	void Update();
 
 	void Draw();
 

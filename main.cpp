@@ -1,4 +1,4 @@
-﻿#include "GameScene.h"
+#include "GameScene.h"
 #include "KamataEngine.h"
 #include "TitleScene.h"
 #include <Windows.h>
@@ -141,12 +141,12 @@ void UpdateScene() {
 	switch (scene) {
 	case Scene::kTitle:
 
-		titleScene->Updata();
+		titleScene->Update();
 
 		break;
 	case Scene::kGame:
 		
-		gameScene->Updata();
+		gameScene->Update();
 
 		break;
 	default:

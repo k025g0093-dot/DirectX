@@ -69,6 +69,11 @@ bool Fade::IsFinished() const {
 	case Fade::Status::None:
 		break;
 	case Fade::Status::FadeIn:
+		if (counter_ >= duration_) {
+			return true;
+		} else {
+			return false;
+		}
 		break;
 	case Fade::Status::FadeOut:
 
