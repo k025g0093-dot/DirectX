@@ -16,7 +16,7 @@ public:
 	MapChipField();
 	~MapChipField();
 
-	void ResetMaoChipData();
+	void ResetMapChipData();
 	void LoadMapChipCsv(const std ::string& filePath);
 	int GetNumBlockHorizontal() const { return kNumBlockHorizontal; };
 	int GetNumBlockVirtical() const { return kNumBlockVirtical; };

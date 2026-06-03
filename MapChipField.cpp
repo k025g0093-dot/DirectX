@@ -23,7 +23,7 @@ std::map<std::string, MapChipType> mapChipTable = {
 
 } // namespace
 
-void MapChipField::ResetMaoChipData() {
+void MapChipField::ResetMapChipData() {
 
 	// マップチップのデータをリセット
 	mapChipData_->data.clear(); // 既存のデータをクリア
@@ -36,7 +36,7 @@ void MapChipField::ResetMaoChipData() {
 void MapChipField::LoadMapChipCsv(const std ::string& filePath) {
 
 	// マップチップのデータリセット
-	ResetMaoChipData();
+	ResetMapChipData();
 
 	// ファイルを開く
 	std::ifstream file;

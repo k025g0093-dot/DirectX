@@ -20,7 +20,7 @@ void DeathParticles::Initialize(Model* model, Camera* camera, const Vector3& pos
 	}
 }
 
-void DeathParticles::Updata() {
+void DeathParticles::Update() {
 	if (isFinished_) {
 		return;
 	}
