@@ -593,14 +593,27 @@ AABB Player::GetAABB() {
 }
 
 void Player::OnCollsion(const Enemy* enemy) {
+	if (isAttack()) {
+		return;
+	}
 	(void)enemy;
 	isDead_ = true;
-
 	velocity_ += Vector3(0, 0.4f, 0);
+
+
 }
 
 float Player::EaseOut(float start, float end, float t) {
 	// t は 0〜1 の値
 	// Quadratic EaseOut の計算
 	return start + (end - start) * (1.0f - (1.0f - t) * (1.0f - t));
+}
+
+const bool Player::isAttack() {
+
+	if (behavior_ == Behavior::kAttack) {
+		return true;
+	}
+
+	return false;
 }

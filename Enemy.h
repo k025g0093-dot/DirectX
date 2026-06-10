@@ -4,6 +4,12 @@
 #include "MyMath.h"
 class Player;
 
+enum class EnemyBehavior {
+	kRoot,   //(通常状態を表す)
+	kDead, //(死亡状態を表す)
+	kUnknown
+};
+
 class Enemy {
 
 public:
@@ -13,7 +19,21 @@ public:
 
 	KamataEngine::Vector3 GetWorldPodition();
 	AABB GetAABB();
-	void OnCollsion(const Player* player);
+	void OnCollsion(Player* player);
+
+	//ですフラグ
+	bool isDead_ = false;
+	bool IsDead() const { return isDead_; };
+
+	// 現在のビヘイビアを表す変数
+	EnemyBehavior behavior_ = EnemyBehavior::kRoot;
+
+	EnemyBehavior behaviorRequest_ = EnemyBehavior ::kUnknown;
+
+	bool isCollisionDisabled_ = false;
+	bool IsCollisionDisabled() const { return isCollisionDisabled_; }
+
+
 
 private: // プライベート関数群とかのその他
 	// ワールドトランスフォーム
@@ -26,10 +46,8 @@ private: // プライベート関数群とかのその他
 	KamataEngine::Vector3 velocity_ = {};
 
 #pragma region 敵の移動に関するもの
-
 	// 加速度を入れるもの
 	static inline const float kWalkSpeed = 0.01f;
-
 	//アニメーション項目
 	//最初の角度
 	static inline const float kWalkMotionAngleStart = 1.5f;
@@ -41,4 +59,20 @@ private: // プライベート関数群とかのその他
 	//経過時間
 	float walkTimer_ = 0.0f;
 #pragma endregion
+
+static inline const float kDeadAnimationDuration = 0.5f;
+
+	float deadTimer_ = 0.0f;
+
+
+private://プライベート関数
+
+	//ビヘイビアによる更新
+	void BehaviorRootUpdate();
+
+	//死亡時の更新
+	void BehaviorDeadUpdate();
+
+	float EaseOut(float start, float end, float t);
+
 };
