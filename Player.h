@@ -115,7 +115,7 @@ public:
 
 	static KamataEngine::Vector3 CornerPositio(const KamataEngine::Vector3& center, Corner corner);
 
-
+	const bool isAttack();
 
 private: // プライベート関数群とかのその他
 	// ワールドトランスフォーム

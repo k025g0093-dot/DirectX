@@ -258,6 +258,8 @@ void GameScene::CheckAllCollisions() {
 
 	aabb1 = player_->GetAABB();
 	for (Enemy* enemy : enemyis_) {
+		if (enemy->IsCollisionDisabled())
+			continue;
 
 		aabb2 = enemy->GetAABB();
 
@@ -296,6 +298,9 @@ void GameScene::PlayeUpdate() {
 
 		enemy->Update();
 	}
+
+
+
 	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
 	// ★これが抜けているので追加してください
 	cameraController_->Update();
@@ -326,6 +331,15 @@ void GameScene::PlayeUpdate() {
 
 		deathParticles_->Initialize(modelParticl_, &cameraController_->GetCamera(), player_->GetWorldPodition());
 	}
+
+	enemyis_.remove_if([](Enemy* enemy) {
+		if (enemy->isDead_) {
+			delete enemy;
+			return true;
+		}
+		return false;
+	});
+
 }
 #pragma endregion
 
